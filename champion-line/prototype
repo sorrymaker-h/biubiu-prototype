@@ -1,0 +1,2883 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>冠军专线 - 邀请制链路原型</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700;900&display=swap');
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Noto Sans SC', sans-serif;
+    background: #1a1a1a;
+    color: #fff;
+    display: flex; flex-direction: column; align-items: center;
+    padding: 32px 40px 60px; min-height: 100vh;
+  }
+
+  .page-title { font-size: 14px; font-weight: 700; color: rgba(255,255,255,0.5); letter-spacing: 2px; margin-bottom: 6px; }
+  .page-sub { font-size: 11px; color: rgba(255,255,255,0.25); margin-bottom: 16px; }
+
+  /* 状态切换 */
+  .state-toggle { display: flex; gap: 8px; margin-bottom: 20px; }
+  .state-btn {
+    padding: 6px 16px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.12);
+    background: rgba(255,255,255,0.04); color: rgba(255,255,255,0.4);
+    font-size: 12px; cursor: pointer; transition: all 0.2s; font-family: inherit;
+  }
+  .state-btn.active {
+    background: rgba(187,168,138,0.12); border-color: rgba(187,168,138,0.3);
+    color: rgba(187,168,138,0.9);
+  }
+
+  /* ===== 客户端外框 ===== */
+  .client-window {
+    width: 1440px; height: 900px;
+    background: #0d0d0d;
+    border-radius: 12px;
+    border: 1px solid rgba(255,255,255,0.08);
+    position: relative; overflow: hidden; flex-shrink: 0;
+    display: flex; flex-direction: column;
+  }
+
+  /* ===== 顶部栏 ===== */
+  .top-bar {
+    height: 48px; min-height: 48px;
+    background: #0a0a0a;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+    display: flex; align-items: center;
+    padding: 0 16px;
+    z-index: 10;
+  }
+  .top-logo {
+    display: flex; align-items: center; gap: 8px; margin-right: 12px;
+  }
+  .top-logo-text {
+    font-size: 18px; font-weight: 900; color: #fff;
+    letter-spacing: 1px;
+  }
+  .top-logo-badge {
+    font-size: 9px; padding: 2px 6px; border-radius: 3px;
+    background: #e74c3c; color: #fff; font-weight: 500;
+  }
+  .top-nav-btn {
+    padding: 5px 14px; border-radius: 16px;
+    background: rgba(80,200,120,0.15); color: rgba(80,200,120,0.9);
+    font-size: 12px; font-weight: 500; margin-right: 16px;
+    border: none; cursor: pointer;
+  }
+  .top-search {
+    flex: 1; max-width: 280px; height: 32px;
+    background: rgba(255,255,255,0.06); border-radius: 16px;
+    border: 1px solid rgba(255,255,255,0.08);
+    display: flex; align-items: center; padding: 0 14px;
+    margin-right: 12px;
+  }
+  .top-search-icon { font-size: 13px; color: rgba(255,255,255,0.25); margin-right: 8px; }
+  .top-search-text { font-size: 12px; color: rgba(255,255,255,0.2); }
+  .top-actions {
+    display: flex; align-items: center; gap: 10px; margin-left: auto;
+  }
+  .top-action-btn {
+    padding: 5px 12px; border-radius: 6px;
+    background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08);
+    color: rgba(255,255,255,0.4); font-size: 11px; cursor: pointer;
+    font-family: inherit; position: relative;
+  }
+  /* 更多按钮 + 下拉菜单 */
+  .more-menu-wrap { position: relative; }
+  .more-btn { position: relative; }
+  .more-btn .msg-dot {
+    position: absolute; top: -3px; right: -3px;
+    width: 8px; height: 8px; border-radius: 50%;
+    background: #e74c3c;
+    animation: dotPulse 1.5s ease-in-out infinite;
+  }
+  @keyframes dotPulse {
+    0%, 100% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.3); opacity: 0.7; }
+  }
+  .more-dropdown {
+    position: absolute; top: 100%; right: 0; margin-top: 6px;
+    width: 180px;
+    background: #1e1c1a;
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 10px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+    display: none; flex-direction: column;
+    padding: 6px 0;
+    z-index: 50;
+    animation: panelSlideIn 0.2s ease;
+  }
+  .more-dropdown.active { display: flex; }
+  .more-dropdown-item {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 16px; cursor: pointer;
+    font-size: 13px; color: rgba(255,255,255,0.6);
+    transition: background 0.15s;
+  }
+  .more-dropdown-item:hover { background: rgba(255,255,255,0.05); }
+  .more-item-icon { font-size: 15px; }
+  .more-item-dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: #e74c3c; margin-left: auto;
+  }
+  .top-window-controls {
+    display: flex; gap: 8px; margin-left: 12px;
+  }
+  .win-ctrl {
+    width: 14px; height: 14px; border-radius: 3px;
+    background: rgba(255,255,255,0.08); display: flex;
+    align-items: center; justify-content: center;
+    font-size: 10px; color: rgba(255,255,255,0.3);
+  }
+
+  /* ===== 主体区域 ===== */
+  .client-body {
+    flex: 1; display: flex; overflow: hidden; position: relative;
+  }
+
+  /* ===== 左侧栏 ===== */
+  .left-sidebar {
+    width: 240px; min-width: 240px;
+    background: rgba(255,255,255,0.02);
+    border-right: 1px solid rgba(255,255,255,0.05);
+    display: flex; flex-direction: column;
+    padding: 16px 0;
+  }
+  /* 限免福利池 */
+  .free-pool-banner {
+    margin: 0 12px 12px; padding: 14px 16px;
+    border-radius: 10px;
+    background: linear-gradient(135deg, #1a3a2a, #0d2a1a);
+    border: 1px solid rgba(80,200,120,0.15);
+    text-align: center; cursor: pointer;
+  }
+  .free-pool-title {
+    font-size: 15px; font-weight: 900; color: rgba(80,200,120,0.9);
+    letter-spacing: 2px;
+  }
+  .free-pool-sub {
+    font-size: 10px; color: rgba(80,200,120,0.4); margin-top: 4px;
+  }
+
+  .sidebar-section-title {
+    font-size: 12px; color: rgba(255,255,255,0.35); font-weight: 500;
+    padding: 0 16px; margin-bottom: 10px;
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .sidebar-section-title span { font-size: 11px; color: rgba(255,255,255,0.2); }
+  .game-list { flex: 1; overflow-y: auto; }
+  .game-item {
+    display: flex; align-items: center; gap: 10px;
+    padding: 8px 16px; cursor: pointer;
+    transition: background 0.15s;
+    border-left: 3px solid transparent;
+  }
+  .game-item:hover { background: rgba(255,255,255,0.03); }
+  .game-item.active {
+    background: rgba(255,255,255,0.04);
+    border-left-color: rgba(80,200,120,0.6);
+  }
+  .game-thumb {
+    width: 56px; height: 32px; border-radius: 4px;
+    background: rgba(255,255,255,0.08);
+    overflow: hidden; display: flex; align-items: center; justify-content: center;
+    font-size: 8px; color: rgba(255,255,255,0.2);
+  }
+  .game-thumb img { width: 100%; height: 100%; object-fit: cover; }
+  .game-info { flex: 1; }
+  .game-name { font-size: 12px; color: rgba(255,255,255,0.7); font-weight: 500; }
+  .game-tag {
+    display: inline-block; margin-top: 2px;
+    font-size: 9px; padding: 1px 5px; border-radius: 2px;
+    background: rgba(80,200,120,0.12); color: rgba(80,200,120,0.7);
+  }
+  .add-game {
+    display: flex; align-items: center; gap: 6px;
+    padding: 10px 16px; color: rgba(255,255,255,0.2);
+    font-size: 12px; cursor: pointer;
+  }
+
+  /* ===== 中央区域 ===== */
+  .center-area {
+    flex: 1; position: relative; overflow: hidden;
+    background: #111;
+  }
+  /* 游戏详情页背景 */
+  .game-detail-bg {
+    position: absolute; inset: 0;
+    background: linear-gradient(135deg, #0d0d0d 0%, #1a1510 50%, #0d0d0d 100%);
+  }
+  /* 冠军选手大图 */
+  .champion-figure {
+    position: absolute; right: 5%; top: 5%;
+    width: 420px; height: 480px;
+    display: flex; flex-direction: column; align-items: center;
+  }
+  .champion-figure-placeholder {
+    width: 100%; height: 100%; border-radius: 8px;
+    background: linear-gradient(180deg, rgba(255,255,255,0.03) 0%, rgba(255,255,255,0.01) 100%);
+    display: flex; align-items: center; justify-content: center;
+    color: rgba(255,255,255,0.08); font-size: 12px;
+  }
+  .champion-name-block {
+    position: absolute; right: 0; top: 40%;
+    text-align: right;
+  }
+  .champion-sign {
+    font-size: 16px; font-style: italic; color: rgba(255,255,255,0.2);
+    font-family: 'Georgia', serif;
+  }
+  .champion-realname {
+    font-size: 13px; color: rgba(255,255,255,0.3); margin-top: 4px;
+  }
+  .champion-alias {
+    font-size: 22px; font-weight: 900; color: rgba(255,255,255,0.5); margin-top: 2px;
+  }
+
+  /* 游戏信息 */
+  .game-detail-info {
+    position: absolute; left: 40px; top: 50%;
+    transform: translateY(-50%);
+  }
+  .game-logo-placeholder {
+    width: 120px; height: 120px; border-radius: 16px;
+    background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 28px; font-weight: 900; color: rgba(255,255,255,0.15);
+    margin-bottom: 16px;
+  }
+  .game-detail-title {
+    font-size: 20px; font-weight: 700; color: rgba(255,255,255,0.8);
+    margin-bottom: 4px;
+  }
+  .game-detail-subtitle {
+    font-size: 12px; color: rgba(255,255,255,0.3); margin-bottom: 20px;
+  }
+  .accelerate-btn {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 12px 36px; border-radius: 24px;
+    background: linear-gradient(135deg, #2d8f5e, #28a55e);
+    color: #fff; font-size: 15px; font-weight: 700;
+    border: none; cursor: pointer; font-family: inherit;
+    box-shadow: 0 4px 16px rgba(40,165,94,0.3);
+  }
+  .accelerate-btn::before { content: '⚡'; }
+
+  /* 品牌标语 */
+  .brand-slogan {
+    position: absolute; bottom: 60px; left: 0; right: 0;
+    text-align: center;
+  }
+  .brand-slogan-main {
+    font-size: 42px; font-weight: 900; letter-spacing: 2px;
+    background: linear-gradient(180deg, rgba(255,255,255,0.15), rgba(255,255,255,0.05));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  }
+  .brand-slogan-sub {
+    font-size: 12px; color: rgba(255,255,255,0.15); letter-spacing: 4px; margin-top: 6px;
+  }
+
+  /* ===== 右侧栏 ===== */
+  .right-sidebar {
+    width: 220px; min-width: 220px;
+    background: rgba(255,255,255,0.02);
+    border-left: 1px solid rgba(255,255,255,0.05);
+    display: flex; flex-direction: column;
+  }
+  /* 右侧顶部冠军banner */
+  .right-champion-banner {
+    height: 80px; margin: 12px 12px 0;
+    border-radius: 8px;
+    background: linear-gradient(135deg, #1a1510, #2a2015);
+    border: 1px solid rgba(187,168,138,0.1);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 10px; color: rgba(187,168,138,0.3);
+    overflow: hidden; position: relative;
+  }
+  .right-champion-banner-text {
+    font-size: 14px; font-weight: 900; color: rgba(187,168,138,0.4);
+    letter-spacing: 2px;
+  }
+  .right-tools-title {
+    font-size: 13px; font-weight: 600; color: rgba(255,255,255,0.4);
+    padding: 16px 16px 10px;
+  }
+  .tool-item {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 16px; cursor: pointer;
+    transition: background 0.15s;
+  }
+  .tool-item:hover { background: rgba(255,255,255,0.03); }
+  .tool-icon {
+    width: 32px; height: 32px; border-radius: 8px;
+    background: rgba(255,255,255,0.04);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px;
+  }
+  .tool-name {
+    flex: 1; font-size: 12px; color: rgba(255,255,255,0.5);
+  }
+  .tool-arrow { font-size: 10px; color: rgba(255,255,255,0.15); }
+
+
+  @keyframes panelSlideIn {
+    from { opacity: 0; transform: translateY(-8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ===== 全屏消息中心 ===== */
+  .message-center {
+    position: absolute; inset: 0;
+    z-index: 200;
+    background: linear-gradient(180deg, #141820, #0e1218);
+    display: none; flex-direction: column;
+    animation: mcFadeIn 0.3s ease;
+  }
+  .message-center.active { display: flex; }
+  @keyframes mcFadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+  .mc-topbar {
+    height: 56px; min-height: 56px;
+    display: flex; align-items: center;
+    padding: 0 24px;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+  }
+  .mc-back {
+    font-size: 13px; color: rgba(255,255,255,0.5);
+    cursor: pointer; padding: 6px 14px;
+    border-radius: 16px; background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.06);
+    transition: background 0.15s;
+  }
+  .mc-back:hover { background: rgba(255,255,255,0.08); }
+  .mc-title {
+    font-size: 15px; font-weight: 700; color: rgba(255,255,255,0.8);
+    margin-left: 16px;
+  }
+  .mc-actions {
+    margin-left: auto; display: flex; gap: 12px; align-items: center;
+  }
+  .mc-action-link {
+    font-size: 12px; color: rgba(255,255,255,0.3); cursor: pointer;
+  }
+  .mc-action-link:hover { color: rgba(255,255,255,0.5); }
+  .mc-action-btn {
+    font-size: 12px; color: rgba(255,255,255,0.3);
+    padding: 5px 14px; border-radius: 6px;
+    background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.06);
+    cursor: pointer;
+  }
+  .mc-list {
+    flex: 1; overflow-y: auto;
+    padding: 20px 80px;
+  }
+
+  /* 普通消息卡片 */
+  .mc-item {
+    padding: 20px 24px;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.04);
+    border-radius: 10px;
+    margin-bottom: 10px;
+    cursor: pointer;
+    transition: background 0.15s;
+    position: relative;
+  }
+  .mc-item:hover { background: rgba(255,255,255,0.05); }
+  .mc-item-header {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 10px;
+  }
+  .mc-item-title {
+    font-size: 14px; font-weight: 600; color: rgba(255,255,255,0.75);
+  }
+  .mc-item-meta {
+    display: flex; align-items: center; gap: 10px;
+  }
+  .mc-item-source {
+    font-size: 11px; color: rgba(255,150,50,0.8);
+    display: flex; align-items: center; gap: 4px;
+  }
+  .mc-item-source::before {
+    content: ''; width: 6px; height: 6px; border-radius: 50%;
+    background: rgba(255,150,50,0.6);
+  }
+  .mc-item-source.mc-source-champion {
+    color: rgba(212,197,168,0.9);
+  }
+  .mc-item-source.mc-source-champion::before {
+    background: rgba(212,197,168,0.7);
+  }
+  .mc-item-time {
+    font-size: 11px; color: rgba(255,255,255,0.2);
+  }
+  .mc-item-desc {
+    font-size: 12px; color: rgba(255,255,255,0.3); line-height: 1.6;
+  }
+
+  /* 冠军邀请函 - 消息中心特殊样式 */
+  .mc-invitation {
+    background: linear-gradient(135deg, rgba(187,168,138,0.06), rgba(187,168,138,0.02));
+    border: 1px solid rgba(187,168,138,0.12);
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+  }
+  .mc-invitation:hover {
+    background: linear-gradient(135deg, rgba(187,168,138,0.08), rgba(187,168,138,0.04));
+    border-color: rgba(187,168,138,0.25);
+    box-shadow: 0 0 24px rgba(212,197,168,0.06), inset 0 0 20px rgba(212,197,168,0.02);
+  }
+  .mc-invitation .mc-item-title {
+    color: rgba(212,197,168,0.95);
+  }
+  .mc-invitation .mc-item-desc {
+    color: rgba(212,197,168,0.45);
+  }
+  .mc-invitation-badge {
+    display: inline-block;
+    font-size: 10px; padding: 3px 10px; border-radius: 4px;
+    background: rgba(212,197,168,0.1); color: rgba(212,197,168,0.7);
+    font-weight: 600; letter-spacing: 1px;
+    margin-left: 10px;
+    vertical-align: middle;
+  }
+
+  /* ===== 全屏邀请仪式页 ===== */
+  .invite-ceremony {
+    position: absolute; inset: 0;
+    z-index: 200;
+    display: none; flex-direction: column; align-items: center; justify-content: center;
+    background: transparent;
+  }
+  .invite-ceremony.active { display: flex; }
+
+  /* 阶段1：暗场 */
+  .ceremony-dim {
+    position: absolute; inset: 0;
+    background: rgba(12,10,8,0);
+    backdrop-filter: blur(0px); -webkit-backdrop-filter: blur(0px);
+    z-index: 1;
+    transition: none;
+  }
+  .invite-ceremony.phase-dim .ceremony-dim {
+    animation: dimIn 0.5s ease forwards;
+  }
+  @keyframes dimIn {
+    to { background: rgba(12,10,8,0.92); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); }
+  }
+
+  /* 阶段2：金色光点 */
+  .ceremony-light-seam {
+    position: absolute; top: 50%; left: 50%; z-index: 2;
+    width: 0px; height: 0px;
+    transform: translate(-50%, -50%);
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(225,210,180,0.5), rgba(212,197,168,0.15) 40%, transparent 70%);
+    box-shadow: 0 0 0px rgba(212,197,168,0);
+    opacity: 0;
+    pointer-events: none;
+  }
+  .invite-ceremony.phase-seam .ceremony-light-seam {
+    animation: dotAppear 0.6s ease forwards;
+  }
+  @keyframes dotAppear {
+    0% { width: 0; height: 0; opacity: 0; box-shadow: 0 0 0 rgba(212,197,168,0); }
+    40% { width: 14px; height: 14px; opacity: 1; box-shadow: 0 0 40px rgba(212,197,168,0.3), 0 0 100px rgba(212,197,168,0.12), 0 0 200px rgba(212,197,168,0.05); }
+    100% { width: 18px; height: 18px; opacity: 1; box-shadow: 0 0 50px rgba(212,197,168,0.35), 0 0 120px rgba(212,197,168,0.15), 0 0 250px rgba(212,197,168,0.06); }
+  }
+
+  /* 阶段3：光从光点向外渗透弥漫 */
+  .ceremony-light-flood {
+    position: absolute; inset: 0; z-index: 3;
+    background: radial-gradient(circle at 50% 50%, rgba(212,197,168,0.15), transparent 5%);
+    opacity: 0;
+    pointer-events: none;
+  }
+  .invite-ceremony.phase-flood .ceremony-light-seam {
+    animation: dotExpand 1.3s ease forwards;
+  }
+  @keyframes dotExpand {
+    0% { width: 18px; height: 18px; opacity: 1; box-shadow: 0 0 50px rgba(212,197,168,0.35), 0 0 120px rgba(212,197,168,0.15); }
+    30% { width: 120px; height: 120px; opacity: 0.9; box-shadow: 0 0 100px rgba(212,197,168,0.25), 0 0 250px rgba(212,197,168,0.1); }
+    60% { width: 400px; height: 400px; opacity: 0.5; box-shadow: 0 0 180px rgba(212,197,168,0.1), 0 0 400px rgba(212,197,168,0.04); }
+    100% { width: 900px; height: 900px; opacity: 0; box-shadow: none; }
+  }
+  .invite-ceremony.phase-flood .ceremony-light-flood {
+    animation: lightFlood 1.3s ease forwards;
+  }
+  @keyframes lightFlood {
+    0% { opacity: 0; background: radial-gradient(circle at 50% 50%, rgba(212,197,168,0.2), transparent 5%); }
+    25% { opacity: 1; background: radial-gradient(circle at 50% 50%, rgba(212,197,168,0.15), transparent 25%); }
+    50% { opacity: 1; background: radial-gradient(circle at 50% 50%, rgba(212,197,168,0.08), transparent 50%); }
+    75% { opacity: 0.8; background: radial-gradient(circle at 50% 50%, rgba(212,197,168,0.04), transparent 65%); }
+    100% { opacity: 0; background: radial-gradient(circle at 50% 50%, rgba(212,197,168,0.01), transparent 80%); }
+  }
+
+  /* 阶段4：内容显现 */
+  .ceremony-close {
+    position: absolute; top: 20px; right: 24px;
+    width: 32px; height: 32px; border-radius: 8px;
+    background: rgba(255,255,255,0.06);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px; color: rgba(255,255,255,0.3);
+    cursor: pointer; z-index: 10;
+    opacity: 0;
+    transition: opacity 0.4s ease, background 0.2s, color 0.2s;
+  }
+  .invite-ceremony.phase-reveal .ceremony-close { opacity: 1; }
+  .ceremony-close:hover { background: rgba(255,255,255,0.1); color: rgba(255,255,255,0.5); }
+
+  .ceremony-content {
+    max-width: 520px; width: 100%;
+    text-align: center;
+    padding: 0 40px;
+    z-index: 5;
+    opacity: 0;
+    transform: scale(0.92);
+    transition: none;
+  }
+  .invite-ceremony.phase-reveal .ceremony-content {
+    animation: contentReveal 0.8s cubic-bezier(0.23,1,0.32,1) forwards;
+  }
+  @keyframes contentReveal {
+    0% { opacity: 0; transform: scale(0.92); }
+    100% { opacity: 1; transform: scale(1); }
+  }
+
+  /* 邀请函卡片 - 3D悬浮 */
+  .invite-card-wrapper {
+    perspective: 800px;
+    margin-bottom: 32px;
+  }
+  .invite-card {
+    position: relative;
+    background: linear-gradient(160deg, #2a2520, #1e1a15, #2a2520);
+    border: 1px solid rgba(187,168,138,0.2);
+    border-radius: 16px;
+    padding: 40px 36px;
+    overflow: hidden;
+    transform-style: preserve-3d;
+    transform: rotateY(0deg) rotateX(0deg);
+    transition: transform 0.15s ease-out, box-shadow 0.15s ease-out;
+    box-shadow: 0 12px 40px rgba(0,0,0,0.4), 0 0 0 1px rgba(187,168,138,0.08);
+    will-change: transform;
+  }
+  .invite-card:hover {
+    box-shadow: 0 20px 60px rgba(0,0,0,0.5), 0 0 30px rgba(212,197,168,0.06), 0 0 0 1px rgba(187,168,138,0.12);
+  }
+  .invite-card::before {
+    content: '';
+    position: absolute; top: -40px; right: -40px;
+    width: 160px; height: 160px;
+    background: radial-gradient(circle, rgba(212,197,168,0.06), transparent 70%);
+    border-radius: 50%;
+  }
+  .invite-card::after {
+    content: '';
+    position: absolute; bottom: -30px; left: -30px;
+    width: 120px; height: 120px;
+    background: radial-gradient(circle, rgba(212,197,168,0.04), transparent 70%);
+    border-radius: 50%;
+  }
+  /* 光泽扫过效果 */
+  .invite-card-sheen {
+    position: absolute; inset: 0;
+    pointer-events: none;
+    z-index: 1;
+    overflow: hidden;
+  }
+  .invite-card-sheen::before {
+    content: '';
+    position: absolute; top: -20%; left: -120%;
+    width: 60%; height: 140%;
+    background: linear-gradient(105deg,
+      transparent 0%,
+      rgba(212,197,168,0.02) 30%,
+      rgba(212,197,168,0.06) 42%,
+      rgba(212,197,168,0.12) 50%,
+      rgba(212,197,168,0.06) 58%,
+      rgba(212,197,168,0.02) 70%,
+      transparent 100%);
+    transform: skewX(-15deg);
+    opacity: 0;
+  }
+  /* 卡片出现时自动播放一次流光 */
+  .invite-ceremony.phase-reveal .invite-card-sheen::before {
+    animation: cardInitSheen 1.4s 0.6s cubic-bezier(0.25,0.46,0.45,0.94) forwards;
+  }
+  @keyframes cardInitSheen {
+    0% { left: -120%; opacity: 0; }
+    10% { opacity: 1; }
+    80% { opacity: 1; }
+    100% { left: 180%; opacity: 0; }
+  }
+  .invite-card-label {
+    font-size: 10px; letter-spacing: 4px; font-weight: 600;
+    color: rgba(187,168,138,0.4);
+    margin-bottom: 24px;
+  }
+  .invite-from-section {
+    margin-bottom: 28px;
+  }
+  .invite-from-label {
+    font-size: 11px; color: rgba(255,255,255,0.2); margin-bottom: 8px;
+  }
+  .invite-from-name {
+    font-size: 28px; font-weight: 900;
+    background: linear-gradient(180deg, #F0E8D8, #C8B89C);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    margin-bottom: 4px;
+  }
+  .invite-from-title {
+    font-size: 12px; color: rgba(187,168,138,0.5);
+  }
+  @import url('https://fonts.googleapis.com/css2?family=Dancing+Script:wght@500&display=swap');
+  .invite-from-signature {
+    font-size: 26px; font-family: 'Dancing Script', cursive;
+    color: rgba(187,168,138,0.3);
+    margin-top: 14px;
+    letter-spacing: 1px;
+    transform: rotate(-2deg);
+  }
+
+  .invite-divider {
+    width: 60px; height: 1px; margin: 0 auto 24px;
+    background: linear-gradient(90deg, transparent, rgba(187,168,138,0.2), transparent);
+  }
+
+  .invite-message {
+    font-size: 15px; color: rgba(255,255,255,0.55); line-height: 1.8;
+    margin-bottom: 24px;
+  }
+  .invite-message em {
+    font-style: normal; color: rgba(212,197,168,0.8); font-weight: 500;
+  }
+
+  .invite-seat-info {
+    display: flex; align-items: center; justify-content: center; gap: 16px;
+    padding: 16px 0;
+    border-top: 1px solid rgba(187,168,138,0.08);
+  }
+  .invite-seat-label {
+    font-size: 11px; color: rgba(255,255,255,0.2);
+  }
+  .invite-seat-num {
+    font-size: 20px; font-weight: 900;
+    color: rgba(212,197,168,0.7);
+  }
+
+  /* 加入按钮 */
+  .join-btn {
+    display: inline-flex; align-items: center; justify-content: center;
+    padding: 16px 48px; border-radius: 12px;
+    background: linear-gradient(135deg, #D4C5A8, #B8A682);
+    color: #1a1510; font-size: 16px; font-weight: 700;
+    border: none; cursor: pointer; font-family: inherit;
+    letter-spacing: 1px;
+    box-shadow: 0 4px 20px rgba(212,197,168,0.2);
+    transition: all 0.2s;
+  }
+  .join-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 24px rgba(212,197,168,0.3);
+  }
+
+  .ceremony-hint {
+    font-size: 11px; color: rgba(255,255,255,0.15);
+    margin-top: 16px;
+  }
+
+  /* ===== 邀请卡→铭牌收窄转场 ===== */
+  .ceremony-nameplate {
+    position: absolute; top: 48px; left: 50%;
+    transform: translateX(-50%);
+    z-index: 6;
+    padding: 16px 40px;
+    border-radius: 12px;
+    background: linear-gradient(160deg, #2a2520, #1e1a15, #2a2520);
+    border: 1px solid rgba(187,168,138,0.2);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.4), 0 0 24px rgba(212,197,168,0.04), 0 0 0 1px rgba(187,168,138,0.08);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.6s ease;
+    text-align: center;
+    overflow: hidden;
+  }
+  .ceremony-nameplate::before {
+    content: '';
+    position: absolute; top: -30px; right: -30px;
+    width: 100px; height: 100px;
+    background: radial-gradient(circle, rgba(212,197,168,0.05), transparent 70%);
+    border-radius: 50%;
+  }
+  .ceremony-nameplate::after {
+    content: '';
+    position: absolute; bottom: -20px; left: -20px;
+    width: 70px; height: 70px;
+    background: radial-gradient(circle, rgba(212,197,168,0.03), transparent 70%);
+    border-radius: 50%;
+  }
+  .ceremony-nameplate.visible { opacity: 1; }
+  .ceremony-nameplate-brand {
+    font-size: 9px; letter-spacing: 4px; font-weight: 600;
+    color: rgba(187,168,138,0.35);
+    margin-bottom: 6px;
+  }
+  .ceremony-nameplate-num {
+    font-size: 22px; font-weight: 900;
+    background: linear-gradient(180deg, #F0E8D8, #C8B89C);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    letter-spacing: 3px;
+  }
+
+  /* 邀请卡收窄动画 */
+  .invite-ceremony.phase-game .ceremony-content {
+    animation: cardShrinkOut 0.7s cubic-bezier(0.4,0,0.2,1) forwards;
+  }
+  @keyframes cardShrinkOut {
+    0% { opacity: 1; transform: scale(1) translateY(0); }
+    60% { opacity: 0.5; transform: scale(0.4) translateY(-120px); }
+    100% { opacity: 0; transform: scale(0.15) translateY(-200px); }
+  }
+
+  /* 游戏选择内容浮现 */
+  .game-select-inline {
+    position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    z-index: 5;
+    opacity: 0;
+    pointer-events: none;
+    padding-top: 40px;
+  }
+  .invite-ceremony.phase-game .game-select-inline {
+    animation: gameContentIn 0.6s 0.5s cubic-bezier(0.23,1,0.32,1) forwards;
+  }
+  @keyframes gameContentIn {
+    0% { opacity: 0; transform: translateY(30px); pointer-events: none; }
+    100% { opacity: 1; transform: translateY(0); pointer-events: auto; }
+  }
+
+  /* 游戏选择剪影背景 */
+  .game-silhouette {
+    position: absolute; bottom: 0; width: 380px; height: 95%;
+    z-index: 1;
+    opacity: 0;
+    pointer-events: none;
+    background-size: contain;
+    background-repeat: no-repeat;
+    transition: opacity 0.8s ease, transform 0.8s ease;
+    transform: scale(0.95);
+  }
+  .game-silhouette.visible {
+    opacity: 1;
+    transform: scale(1);
+  }
+  .game-silhouette-left {
+    left: -20px;
+    background-position: left bottom;
+    mask-image: linear-gradient(to right, rgba(0,0,0,0.7), transparent 90%);
+    -webkit-mask-image: linear-gradient(to right, rgba(0,0,0,0.7), transparent 90%);
+  }
+  .silhouette-signature {
+    position: absolute; bottom: 20%; left: 50%;
+    transform: translateX(-50%) rotate(-5deg);
+    font-family: 'Dancing Script', cursive;
+    font-size: 42px;
+    color: rgba(212,197,168,0.4);
+    white-space: nowrap;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.8s 0.3s ease;
+    text-shadow: 0 0 30px rgba(212,197,168,0.1);
+  }
+  .game-silhouette-left.visible .silhouette-signature {
+    opacity: 1;
+  }
+  .game-silhouette-right {
+    right: -20px;
+    background-position: right bottom;
+    mask-image: linear-gradient(to left, rgba(0,0,0,0.7), transparent 90%);
+    -webkit-mask-image: linear-gradient(to left, rgba(0,0,0,0.7), transparent 90%);
+  }
+
+  /* 选手剪影(左) - 提高fill透明度到0.18 */
+  .game-silhouette-left.pubg { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 300 500'%3E%3Cg fill='rgba(187,168,138,0.18)'%3E%3Cpath d='M150,30 C140,30 130,35 125,45 L120,55 C115,60 115,70 120,75 L125,80 C120,85 115,95 115,105 L115,120 C115,130 120,135 125,140 L130,145 L125,150 C110,155 95,165 85,180 L70,210 C65,220 60,235 60,250 L60,320 L55,330 C50,340 45,355 50,370 L55,385 L50,390 C45,400 40,415 45,430 L55,470 L45,475 L40,490 L85,490 L95,475 L105,470 L110,430 C115,415 110,400 105,390 L100,385 L105,370 C110,355 105,340 100,330 L95,320 L95,250 C95,240 100,230 105,220 L120,195 C130,180 145,175 155,175 L160,175 C170,175 185,180 195,195 L210,220 C215,230 220,240 220,250 L220,320 L215,330 C210,340 205,355 210,370 L215,385 L210,390 C205,400 200,415 205,430 L215,470 L210,475 L205,490 L250,490 L260,475 L265,470 L260,430 C255,415 260,400 255,390 L250,385 L255,370 C260,355 255,340 250,330 L245,320 L245,250 C245,235 240,220 235,210 L220,180 C210,165 195,155 180,150 L175,145 L180,140 C185,135 190,130 190,120 L190,105 C190,95 185,85 180,80 L185,75 C190,70 190,60 185,55 L180,45 C175,35 165,30 155,30 Z'/%3E%3C/g%3E%3C/svg%3E"); }
+  .game-silhouette-left.sf6 { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 300 500'%3E%3Cg fill='rgba(187,168,138,0.18)'%3E%3Cpath d='M160,25 C148,25 138,32 133,42 L128,55 C124,62 125,72 130,78 L138,85 C130,95 125,108 125,120 L125,135 C125,142 128,148 133,153 L115,160 C98,168 85,185 78,200 L60,248 L40,260 C30,268 28,282 35,295 L25,310 L15,340 L15,360 L40,370 L50,355 L55,340 L62,325 L70,310 L68,290 L78,278 L75,320 L75,350 C75,365 78,380 82,395 L88,425 L82,445 L78,470 L75,490 L120,490 L125,460 L130,435 L135,415 L140,395 C142,385 143,375 143,365 L143,340 L150,350 L158,340 L158,365 C158,375 159,385 162,395 L168,415 L172,435 L178,460 L182,490 L228,490 L225,470 L220,445 L215,425 L220,395 C225,380 228,365 228,350 L228,320 L235,278 L245,290 L242,310 L250,325 L258,340 L262,355 L272,370 L298,360 L298,340 L288,310 L278,295 C285,282 282,268 272,260 L252,248 L235,200 C228,185 215,168 198,160 L178,153 C183,148 188,142 188,135 L188,120 C188,108 182,95 175,85 L182,78 C188,72 189,62 185,55 L180,42 C175,32 165,25 153,25 Z'/%3E%3C/g%3E%3C/svg%3E"); }
+  .game-silhouette-left.aion { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 300 500'%3E%3Cg fill='rgba(187,168,138,0.18)'%3E%3Cpath d='M155,35 C145,35 136,40 132,48 L128,58 C125,64 126,72 130,78 L135,83 C128,92 124,104 124,115 L124,128 C124,136 128,143 133,148 L128,155 L110,162 C95,170 82,185 75,202 L65,230 L60,250 L60,280 C60,295 65,310 72,322 L78,335 L75,360 C72,380 75,400 82,418 L92,448 L88,470 L85,490 L128,490 L132,465 L138,440 L142,418 C145,405 145,392 142,380 L138,360 L145,340 L155,348 L165,340 L172,360 L168,380 C165,392 165,405 168,418 L172,440 L178,465 L182,490 L225,490 L222,470 L218,448 L228,418 C235,400 238,380 235,360 L232,335 L238,322 C245,310 250,295 250,280 L250,250 L245,230 L235,202 C228,185 215,170 200,162 L182,155 L178,148 C183,143 186,136 186,128 L186,115 C186,104 182,92 175,83 L180,78 C184,72 185,64 182,58 L178,48 C174,40 165,35 155,35 Z M95,130 L60,95 L40,100 L38,108 L55,125 L85,145 Z M215,130 L250,95 L270,100 L272,108 L255,125 L225,145 Z'/%3E%3C/g%3E%3C/svg%3E"); }
+
+  /* 游戏角色剪影(右) */
+  .game-silhouette-right.pubg { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 300 500'%3E%3Cg fill='rgba(187,168,138,0.18)'%3E%3Cpath d='M140,40 C130,40 122,48 120,55 L118,62 C115,68 118,76 122,80 L125,82 L120,90 C115,98 112,108 112,118 L112,130 C112,140 118,148 125,152 L120,158 C108,164 95,178 88,195 L75,228 L70,248 L70,285 L72,310 L68,335 L65,360 C62,385 68,410 78,432 L88,458 L85,490 L125,490 L130,460 L135,438 L140,418 C143,405 143,392 140,380 L138,365 L145,345 L152,350 L160,345 L168,365 L165,380 C162,392 162,405 165,418 L170,438 L175,460 L180,490 L220,490 L218,458 L228,432 C238,410 242,385 240,360 L238,335 L235,310 L238,285 L238,248 L232,228 L220,195 C212,178 200,164 188,158 L182,152 C190,148 195,140 195,130 L195,118 C195,108 192,98 188,90 L182,82 L185,80 C190,76 192,68 190,62 L188,55 C185,48 178,40 168,40 Z M200,160 L210,155 L240,180 L268,240 L260,260 L265,310 L258,335 L262,360 L255,380 L248,350 L250,310 L245,280 L235,250 L215,200 Z'/%3E%3Crect x='110' y='215' width='90' height='6' rx='3' transform='rotate(-35 155 218)' fill='rgba(187,168,138,0.12)'/%3E%3C/g%3E%3C/svg%3E"); }
+  .game-silhouette-right.sf6 { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 300 500'%3E%3Cg fill='rgba(187,168,138,0.18)'%3E%3Cpath d='M150,30 C140,30 132,36 128,44 L124,55 C122,62 124,70 128,75 L132,78 L125,88 C120,98 118,110 118,120 L118,135 C118,145 124,153 130,158 L118,165 C102,175 88,192 80,212 L68,245 L62,275 L62,310 L65,340 L60,370 C58,395 62,420 72,442 L82,465 L78,490 L122,490 L128,462 L134,440 L140,420 C144,408 145,395 142,382 L138,365 L148,342 L155,348 L162,342 L172,365 L168,382 C165,395 166,408 170,420 L176,440 L182,462 L188,490 L232,490 L228,465 L238,442 C248,420 252,395 250,370 L245,340 L248,310 L248,275 L242,245 L230,212 C222,192 208,175 192,165 L180,158 C186,153 192,145 192,135 L192,120 C192,110 190,98 185,88 L178,78 L182,75 C186,70 188,62 186,55 L182,44 C178,36 170,30 160,30 Z M60,250 L40,225 L20,228 L15,260 L30,282 L55,288 Z M250,250 L270,225 L290,228 L295,260 L280,282 L255,288 Z'/%3E%3C/g%3E%3C/svg%3E"); }
+  .game-silhouette-right.aion { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 300 500'%3E%3Cg fill='rgba(187,168,138,0.18)'%3E%3Cpath d='M150,28 C140,28 130,34 126,44 L122,56 C120,64 122,72 128,78 L132,82 L126,92 C120,102 116,114 116,126 L116,140 C116,150 122,158 128,164 L116,172 C100,182 86,198 78,218 L66,252 L62,282 L62,318 L66,348 L60,378 C58,402 62,428 72,448 L82,472 L78,490 L122,490 L128,468 L134,448 L140,428 C144,415 145,402 142,390 L138,372 L148,352 L155,358 L162,352 L172,372 L168,390 C165,402 166,415 170,428 L176,448 L182,468 L188,490 L232,490 L228,472 L238,448 C248,428 252,402 250,378 L244,348 L248,318 L248,282 L244,252 L232,218 C224,198 210,182 194,172 L182,164 C188,158 194,150 194,140 L194,126 C194,114 190,102 184,92 L178,82 L182,78 C188,72 190,64 188,56 L184,44 C180,34 170,28 160,28 Z M90,120 L55,80 L30,85 L28,95 L52,118 L85,142 Z M220,120 L255,80 L280,85 L282,95 L258,118 L225,142 Z M62,318 L42,330 L28,368 L32,395 L48,388 L58,358 Z M248,318 L268,330 L282,368 L278,395 L262,388 L252,358 Z'/%3E%3C/g%3E%3C/svg%3E"); }
+
+  .game-select-content {
+    max-width: 560px; width: 100%;
+    text-align: center;
+    padding: 0 40px;
+    position: relative;
+    z-index: 2;
+  }
+  .game-select-title {
+    font-size: 11px; letter-spacing: 3px; color: rgba(187,168,138,0.4);
+    margin-bottom: 8px;
+  }
+  .game-select-heading {
+    font-size: 22px; font-weight: 700; color: rgba(255,255,255,0.75);
+    margin-bottom: 6px;
+  }
+  .game-select-sub {
+    font-size: 12px; color: rgba(255,255,255,0.25);
+    margin-bottom: 36px;
+  }
+  .game-select-grid {
+    display: flex; gap: 16px; justify-content: center;
+    margin-bottom: 36px;
+  }
+  .game-select-card {
+    width: 150px; padding: 24px 16px;
+    border-radius: 12px;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.06);
+    cursor: pointer; transition: all 0.2s;
+    text-align: center;
+  }
+  .game-select-card:hover {
+    border-color: rgba(187,168,138,0.2);
+    background: rgba(187,168,138,0.04);
+  }
+  .game-select-card.selected {
+    border-color: rgba(187,168,138,0.4);
+    background: rgba(187,168,138,0.06);
+    box-shadow: 0 0 20px rgba(187,168,138,0.08);
+  }
+  .game-select-card-icon {
+    width: 60px; height: 60px; border-radius: 12px; margin: 0 auto 12px;
+    background: rgba(255,255,255,0.06);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 24px;
+  }
+  .game-select-card-name {
+    font-size: 13px; font-weight: 600; color: rgba(255,255,255,0.6);
+    margin-bottom: 4px;
+  }
+  .game-select-card-champion {
+    font-size: 10px; color: rgba(187,168,138,0.4);
+  }
+  .game-select-card.selected .game-select-card-name { color: rgba(212,197,168,0.9); }
+
+  .confirm-btn {
+    display: inline-flex; align-items: center; justify-content: center;
+    padding: 14px 44px; border-radius: 12px;
+    background: linear-gradient(135deg, #D4C5A8, #B8A682);
+    color: #1a1510; font-size: 15px; font-weight: 700;
+    border: none; cursor: pointer; font-family: inherit;
+    letter-spacing: 1px;
+    box-shadow: 0 4px 20px rgba(212,197,168,0.2);
+    opacity: 0.4; pointer-events: none;
+    transition: all 0.2s;
+  }
+  .confirm-btn.enabled {
+    opacity: 1; pointer-events: auto;
+  }
+  .confirm-btn.enabled:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 24px rgba(212,197,168,0.3);
+  }
+  .game-select-warn {
+    font-size: 11px; color: rgba(255,255,255,0.2);
+    margin-top: 14px;
+  }
+
+  /* ===== 激活成功页 ===== */
+  .activation-page {
+    position: absolute; inset: 0;
+    z-index: 220;
+    background: rgba(12,10,8,0.95);
+    backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px);
+    display: none; flex-direction: column; align-items: center; justify-content: center;
+    animation: ceremonyFadeIn 0.5s ease;
+  }
+  .activation-page.active { display: flex; }
+
+  .activation-content {
+    text-align: center;
+  }
+  .activation-label {
+    font-size: 11px; letter-spacing: 4px; color: rgba(187,168,138,0.4);
+    margin-bottom: 20px;
+  }
+  .activation-welcome {
+    font-size: 24px; font-weight: 700; color: rgba(255,255,255,0.75);
+    margin-bottom: 32px;
+  }
+  /* 铭牌 */
+  .nameplate {
+    width: 280px; margin: 0 auto 32px;
+    padding: 32px 24px;
+    border-radius: 16px;
+    background: linear-gradient(160deg, #2a2520, #1e1a15);
+    border: 1px solid rgba(187,168,138,0.15);
+    position: relative; overflow: hidden;
+  }
+  .nameplate::before {
+    content: '';
+    position: absolute; top: -30px; right: -30px;
+    width: 100px; height: 100px;
+    background: radial-gradient(circle, rgba(212,197,168,0.06), transparent 70%);
+  }
+  .nameplate-brand {
+    font-size: 9px; letter-spacing: 3px; color: rgba(187,168,138,0.35);
+    margin-bottom: 16px;
+  }
+  .nameplate-number {
+    font-size: 42px; font-weight: 900;
+    background: linear-gradient(180deg, #F0E8D8, #C8B89C);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    margin-bottom: 8px;
+  }
+  .nameplate-game {
+    font-size: 12px; color: rgba(255,255,255,0.35);
+    margin-bottom: 4px;
+  }
+  .nameplate-inviter {
+    font-size: 11px; color: rgba(187,168,138,0.35);
+  }
+  .nameplate-divider {
+    width: 40px; height: 1px; margin: 16px auto;
+    background: linear-gradient(90deg, transparent, rgba(187,168,138,0.15), transparent);
+  }
+  .nameplate-user {
+    font-size: 14px; font-weight: 600; color: rgba(255,255,255,0.5);
+  }
+
+  .activation-done-btn {
+    display: inline-flex; padding: 12px 36px; border-radius: 10px;
+    background: rgba(187,168,138,0.1); border: 1px solid rgba(187,168,138,0.2);
+    color: rgba(212,197,168,0.7); font-size: 13px; font-weight: 500;
+    cursor: pointer; font-family: inherit;
+    transition: all 0.2s;
+  }
+  .activation-done-btn:hover {
+    background: rgba(187,168,138,0.15);
+  }
+
+  /* ===== KOL邀请者页面 ===== */
+  .kol-page {
+    position: absolute; inset: 0;
+    z-index: 200;
+    background: rgba(12,10,8,0.95);
+    display: none;
+    animation: ceremonyFadeIn 0.4s ease;
+  }
+  .kol-page.active { display: flex; }
+
+  /* 左侧面板 - 简洁高级 */
+  .kol-left {
+    width: 380px; min-width: 380px;
+    height: 100%;
+    padding: 0;
+    display: flex; flex-direction: column;
+    justify-content: center;
+    border-right: 1px solid rgba(187,168,138,0.06);
+    background: linear-gradient(180deg, rgba(42,37,32,0.25), rgba(18,15,12,0.15));
+    overflow: hidden;
+    position: relative;
+  }
+
+  /* 品牌标题区 */
+  .kol-brand-area {
+    padding: 0 36px 32px;
+    flex-shrink: 0;
+  }
+  .kol-brand-tag {
+    font-size: 11px; letter-spacing: 3px; color: rgba(187,168,138,0.4);
+    margin-bottom: 16px; font-weight: 700;
+  }
+  .kol-title {
+    font-size: 28px; font-weight: 900;
+    background: linear-gradient(180deg, #F0E8D8, #C8B89C);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    margin-bottom: 10px;
+    line-height: 1.2;
+  }
+  .kol-subtitle {
+    font-size: 13px; color: rgba(255,255,255,0.28);
+    line-height: 1.8;
+    max-width: 280px;
+  }
+
+  /* 铭牌主体区 */
+  .kol-identity {
+    padding: 0 36px;
+    flex-shrink: 0;
+    display: flex; flex-direction: column; align-items: stretch;
+  }
+  .kol-identity-card {
+    padding: 28px 24px 24px;
+    border-radius: 16px;
+    background: linear-gradient(160deg, #2a2520, #1e1a15, #2a2520);
+    border: 1px solid rgba(187,168,138,0.15);
+    position: relative; overflow: hidden;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.35), 0 0 60px rgba(187,168,138,0.02);
+  }
+  .kol-identity-card::before {
+    content: '';
+    position: absolute; top: -40px; right: -40px;
+    width: 120px; height: 120px;
+    background: radial-gradient(circle, rgba(212,197,168,0.06), transparent 70%);
+  }
+  .kol-id-brand {
+    font-size: 8px; letter-spacing: 5px; color: rgba(187,168,138,0.3);
+    margin-bottom: 14px;
+  }
+  .kol-id-row {
+    display: flex; align-items: baseline; gap: 14px;
+    margin-bottom: 8px;
+  }
+  .kol-id-name {
+    font-size: 28px; font-weight: 900;
+    background: linear-gradient(180deg, #F0E8D8, #C8B89C);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    line-height: 1;
+  }
+  .kol-id-num {
+    font-size: 24px; font-weight: 800;
+    background: linear-gradient(180deg, #E8DCC8, #C0AD90);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    line-height: 1;
+  }
+  .kol-id-meta {
+    font-size: 12px; color: rgba(255,255,255,0.25);
+    margin-bottom: 12px;
+  }
+  .kol-id-badge {
+    display: inline-block;
+    font-size: 9px; padding: 3px 10px; border-radius: 4px;
+    background: rgba(212,197,168,0.08);
+    color: rgba(212,197,168,0.55);
+    font-weight: 600; letter-spacing: 2px;
+  }
+  /* 技术专家入口 — 铭牌内极淡文字 */
+  .kol-id-service {
+    position: absolute; bottom: 14px; right: 18px;
+    font-size: 10px; color: rgba(187,168,138,0.2);
+    cursor: pointer;
+    transition: color 0.2s;
+    letter-spacing: 0.5px;
+  }
+  .kol-id-service:hover {
+    color: rgba(187,168,138,0.45);
+  }
+
+  /* 发出邀请按钮 */
+  .kol-invite-main {
+    margin-top: 20px;
+    padding: 15px 0;
+    border-radius: 10px;
+    background: linear-gradient(135deg, rgba(212,197,168,0.12), rgba(187,168,138,0.06));
+    border: 1px solid rgba(187,168,138,0.2);
+    color: rgba(212,197,168,0.85);
+    font-size: 14px; font-weight: 700;
+    letter-spacing: 3px;
+    cursor: pointer; font-family: inherit;
+    transition: all 0.3s ease;
+    text-align: center;
+  }
+  .kol-invite-main:hover {
+    background: linear-gradient(135deg, rgba(212,197,168,0.18), rgba(187,168,138,0.1));
+    border-color: rgba(187,168,138,0.35);
+    box-shadow: 0 6px 28px rgba(187,168,138,0.1);
+    transform: translateY(-1px);
+  }
+
+  /* 名额链接（点击查看记录） */
+  .kol-quota-link {
+    margin-top: 12px;
+    text-align: center;
+    font-size: 11px; color: rgba(255,255,255,0.15);
+    cursor: pointer;
+    transition: color 0.2s;
+  }
+  .kol-quota-link:hover {
+    color: rgba(212,197,168,0.4);
+  }
+  .kol-quota-link em {
+    font-style: normal; color: rgba(212,197,168,0.4); font-weight: 600;
+  }
+
+  /* ===== KOL邀请仪式浮层 ===== */
+  .kol-invite-overlay {
+    position: absolute; inset: 0;
+    z-index: 210;
+    display: none; align-items: center; justify-content: center;
+  }
+  .kol-invite-overlay.active { display: flex; }
+
+  /* 仪式动效 - 暗场聚焦 */
+  .kol-ceremony-dim {
+    position: absolute; inset: 0;
+    background: rgba(6,4,2,0.92);
+    opacity: 0;
+    transition: opacity 0.4s ease;
+  }
+  .kol-invite-overlay.phase-dim .kol-ceremony-dim { opacity: 1; }
+
+  /* 仪式动效 - 金色微尘 */
+  .kol-ceremony-dust {
+    position: absolute; inset: 0;
+    opacity: 0;
+    transition: opacity 1s ease 0.3s;
+    pointer-events: none;
+    overflow: hidden;
+  }
+  .kol-invite-overlay.phase-dim .kol-ceremony-dust { opacity: 1; }
+  .kol-invite-overlay.phase-ink .kol-ceremony-dust { opacity: 0.4; transition: opacity 2s ease; }
+  .kol-dust-particle {
+    position: absolute;
+    width: 2px; height: 2px;
+    border-radius: 50%;
+    background: rgba(212,197,168,0.45);
+    box-shadow: 0 0 6px rgba(212,197,168,0.2), 0 0 12px rgba(212,197,168,0.08);
+  }
+  @keyframes dustFloat {
+    0% { transform: translateY(0) translateX(0); opacity: 0; }
+    10% { opacity: 1; }
+    90% { opacity: 0.8; }
+    100% { transform: translateY(-150px) translateX(40px); opacity: 0; }
+  }
+
+  /* 仪式动效 - 折痕线（信纸的折缝，带呼吸脉动） */
+  .kol-ceremony-light {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    width: 1px; height: 0;
+    background: linear-gradient(180deg, transparent, rgba(212,197,168,0.35), rgba(212,197,168,0.7), rgba(212,197,168,0.35), transparent);
+    box-shadow: 0 0 18px rgba(212,197,168,0.15), 0 0 50px rgba(212,197,168,0.06);
+    opacity: 0;
+    transition: height 0.5s cubic-bezier(0.25, 0, 0.2, 1), opacity 0.3s ease;
+  }
+  .kol-invite-overlay.phase-crease .kol-ceremony-light {
+    opacity: 1;
+    height: 380px;
+    animation: creasePulse 1.2s ease-in-out infinite;
+  }
+  @keyframes creasePulse {
+    0%, 100% { box-shadow: 0 0 18px rgba(212,197,168,0.15), 0 0 50px rgba(212,197,168,0.06); }
+    50% { box-shadow: 0 0 30px rgba(212,197,168,0.25), 0 0 80px rgba(212,197,168,0.1); }
+  }
+  .kol-invite-overlay.phase-unfold .kol-ceremony-light {
+    opacity: 0;
+    transition: opacity 0.35s ease 0.05s;
+    animation: none;
+  }
+
+  /* 请柬卡片 - 从折痕展开 */
+  .kol-letter {
+    position: relative; z-index: 2;
+    pointer-events: none;
+    transform: scaleX(0);
+    opacity: 0;
+    transition: transform 0.7s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.15s ease;
+  }
+  .kol-invite-overlay.phase-unfold .kol-letter {
+    transform: scaleX(1);
+    opacity: 1;
+    pointer-events: auto;
+  }
+  /* 展开时边缘金色光晕 */
+  .kol-letter-inner {
+    box-shadow: 0 30px 100px rgba(0,0,0,0.6), 0 0 80px rgba(187,168,138,0.03);
+    transition: box-shadow 0.8s ease;
+  }
+  .kol-invite-overlay.phase-unfold .kol-letter-inner {
+    box-shadow: 0 30px 100px rgba(0,0,0,0.6), 0 0 80px rgba(187,168,138,0.06), 0 0 0 1px rgba(212,197,168,0.08);
+    animation: letterGlow 1.2s ease forwards;
+  }
+  @keyframes letterGlow {
+    0% { box-shadow: 0 0 80px rgba(212,197,168,0.25), 0 0 160px rgba(187,168,138,0.1), 0 0 0 1px rgba(212,197,168,0.3); }
+    100% { box-shadow: 0 30px 100px rgba(0,0,0,0.6), 0 0 80px rgba(187,168,138,0.03), 0 0 0 1px rgba(212,197,168,0.08); }
+  }
+
+  /* 请柬内容 - 逐行浮现（落字，带金色高光沉淀） */
+  .kol-letter-inner > * {
+    opacity: 0;
+    transform: translateY(6px);
+    transition: opacity 0.5s ease, transform 0.5s ease, filter 0.8s ease;
+    filter: brightness(1);
+  }
+  .kol-invite-overlay.phase-ink .kol-letter-inner > * {
+    opacity: 1;
+    transform: translateY(0);
+    animation: inkSettle 0.8s ease forwards;
+  }
+  @keyframes inkSettle {
+    0% { filter: brightness(2) drop-shadow(0 0 10px rgba(212,197,168,0.35)); }
+    40% { filter: brightness(1.3) drop-shadow(0 0 4px rgba(212,197,168,0.15)); }
+    100% { filter: brightness(1) drop-shadow(0 0 0px transparent); }
+  }
+  .kol-invite-overlay.phase-ink .kol-letter-inner > *:nth-child(1) { transition-delay: 0s; animation-delay: 0s; }
+  .kol-invite-overlay.phase-ink .kol-letter-inner > *:nth-child(2) { transition-delay: 0.06s; animation-delay: 0.06s; }
+  .kol-invite-overlay.phase-ink .kol-letter-inner > *:nth-child(3) { transition-delay: 0.14s; animation-delay: 0.14s; }
+  .kol-invite-overlay.phase-ink .kol-letter-inner > *:nth-child(4) { transition-delay: 0.24s; animation-delay: 0.24s; }
+  .kol-invite-overlay.phase-ink .kol-letter-inner > *:nth-child(5) { transition-delay: 0.34s; animation-delay: 0.34s; }
+  .kol-invite-overlay.phase-ink .kol-letter-inner > *:nth-child(6) { transition-delay: 0.44s; animation-delay: 0.44s; }
+  .kol-invite-overlay.phase-ink .kol-letter-inner > *:nth-child(7) { transition-delay: 1.6s; animation-delay: 1.6s; }
+  .kol-invite-overlay.phase-ink .kol-letter-inner > *:nth-child(8) { transition-delay: 1.8s; animation-delay: 1.8s; }
+  .kol-letter-inner {
+    width: 460px;
+    padding: 52px 48px 40px;
+    border-radius: 3px;
+    background: linear-gradient(170deg, #2c2722, #1e1a15, #252118);
+    border: 1px solid rgba(187,168,138,0.12);
+    box-shadow: 0 30px 100px rgba(0,0,0,0.6), 0 0 80px rgba(187,168,138,0.03);
+    position: relative; overflow: hidden;
+  }
+  .kol-letter-inner::before {
+    content: '';
+    position: absolute; top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, rgba(212,197,168,0.2), rgba(212,197,168,0.35), rgba(212,197,168,0.2), transparent);
+  }
+  .kol-letter-inner::after {
+    content: '';
+    position: absolute; bottom: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, rgba(212,197,168,0.15), rgba(212,197,168,0.25), rgba(212,197,168,0.15), transparent);
+  }
+
+  /* 请柬顶部品牌 */
+  .kol-letter-brand {
+    text-align: center;
+    font-size: 9px; letter-spacing: 6px;
+    color: rgba(187,168,138,0.3);
+    margin-bottom: 20px;
+  }
+  .kol-letter-rule {
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(187,168,138,0.12), transparent);
+    margin-bottom: 32px;
+  }
+  .kol-letter-rule-bottom {
+    margin-top: 32px; margin-bottom: 28px;
+  }
+
+  /* TO 收信人 */
+  .kol-letter-to {
+    margin-bottom: 36px;
+    display: flex; align-items: center; gap: 14px;
+  }
+  .kol-letter-to-label {
+    font-size: 11px; letter-spacing: 3px;
+    color: rgba(187,168,138,0.3);
+    font-weight: 600;
+    flex-shrink: 0;
+  }
+  .kol-letter-to-btn {
+    flex: 1; padding: 10px 16px;
+    border-radius: 6px;
+    background: rgba(255,255,255,0.02);
+    border: 1px dashed rgba(187,168,138,0.15);
+    color: rgba(255,255,255,0.2);
+    font-size: 13px; font-family: inherit;
+    cursor: pointer;
+    transition: all 0.3s;
+    text-align: left;
+  }
+  .kol-letter-to-btn:hover {
+    border-color: rgba(187,168,138,0.3);
+    color: rgba(255,255,255,0.35);
+    background: rgba(187,168,138,0.03);
+  }
+  .kol-letter-to-input {
+    flex: 1; padding: 10px 16px;
+    border-radius: 6px;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(187,168,138,0.2);
+    color: rgba(255,255,255,0.75);
+    font-size: 14px; font-family: inherit;
+    outline: none;
+    letter-spacing: 1px;
+    transition: border-color 0.3s, box-shadow 0.3s;
+  }
+  .kol-letter-to-input:focus {
+    border-color: rgba(187,168,138,0.35);
+    box-shadow: 0 0 16px rgba(187,168,138,0.06);
+  }
+  .kol-letter-to-input::placeholder {
+    color: rgba(255,255,255,0.12);
+    letter-spacing: 0;
+  }
+
+  /* 请柬正文 */
+  .kol-letter-body {
+    text-align: center;
+    padding: 8px 0;
+  }
+  .kol-letter-line1,
+  .kol-letter-line2 {
+    font-size: 18px; font-weight: 300;
+    color: rgba(255,255,255,0.55);
+    line-height: 2;
+    letter-spacing: 1px;
+  }
+  .kol-letter-line3 {
+    font-size: 15px; font-weight: 500;
+    color: rgba(212,197,168,0.65);
+    margin-top: 16px;
+    letter-spacing: 2px;
+  }
+
+  /* 签名 */
+  .kol-letter-sign {
+    display: flex; flex-direction: column; align-items: flex-end;
+    padding-right: 12px;
+  }
+  .kol-letter-sign-label {
+    font-size: 10px; color: rgba(187,168,138,0.2);
+    letter-spacing: 2px; margin-bottom: 6px;
+  }
+  .kol-letter-sign-name {
+    font-family: 'Dancing Script', cursive;
+    font-size: 36px;
+    color: rgba(212,197,168,0.5);
+    transform: rotate(-2deg);
+    text-shadow: 0 0 20px rgba(212,197,168,0.08);
+    clip-path: inset(0 100% 0 0);
+  }
+  /* 签名手写动画 — 独立于通用ink，等正文落完再落笔 */
+  .kol-invite-overlay.phase-ink .kol-letter-sign {
+    animation: inkSettle 0.8s ease 0.54s forwards;
+  }
+  .kol-invite-overlay.phase-ink .kol-letter-sign-name {
+    animation: signWrite 1s cubic-bezier(0.22, 0.6, 0.36, 1) 0.8s forwards;
+  }
+  @keyframes signWrite {
+    0% {
+      clip-path: inset(0 100% 0 0);
+      filter: brightness(2) drop-shadow(0 0 8px rgba(212,197,168,0.3));
+    }
+    60% {
+      filter: brightness(1.5) drop-shadow(0 0 4px rgba(212,197,168,0.15));
+    }
+    100% {
+      clip-path: inset(0 0% 0 0);
+      filter: brightness(1) drop-shadow(0 0 0px transparent);
+    }
+  }
+
+  /* 发出邀请按钮 */
+  .kol-letter-send {
+    display: block;
+    width: 100%;
+    margin-top: 28px;
+    padding: 14px 0;
+    border-radius: 8px;
+    background: linear-gradient(135deg, rgba(212,197,168,0.12), rgba(187,168,138,0.06));
+    border: 1px solid rgba(187,168,138,0.2);
+    color: rgba(212,197,168,0.8);
+    font-size: 13px; font-weight: 700;
+    letter-spacing: 3px;
+    cursor: pointer; font-family: inherit;
+    transition: all 0.3s;
+  }
+  .kol-letter-send:hover {
+    background: linear-gradient(135deg, rgba(212,197,168,0.18), rgba(187,168,138,0.1));
+    border-color: rgba(187,168,138,0.35);
+    box-shadow: 0 4px 20px rgba(187,168,138,0.1);
+  }
+
+  /* 关闭按钮 */
+  .kol-letter-close {
+    position: absolute; top: -36px; right: 0;
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08);
+    color: rgba(255,255,255,0.25);
+    font-size: 13px;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.2s;
+  }
+  .kol-letter-close:hover {
+    background: rgba(255,255,255,0.08);
+    color: rgba(255,255,255,0.5);
+  }
+
+  /* ===== 发送仪式 - 信件粒子化飘散 ===== */
+  .kol-invite-overlay.phase-send .kol-letter {
+    opacity: 0;
+    transform: scale(0.9) translateY(-20px);
+    transition: opacity 0.8s ease, transform 0.8s ease;
+    pointer-events: none;
+  }
+  .kol-invite-overlay.phase-send .kol-letter-close {
+    opacity: 0; pointer-events: none;
+  }
+
+  /* 粒子容器 */
+  .kol-send-particles {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    width: 460px; height: 500px;
+    pointer-events: none;
+    z-index: 3;
+  }
+  .kol-send-particle {
+    position: absolute;
+    border-radius: 50%;
+    background: rgba(212,197,168,0.7);
+    box-shadow: 0 0 6px rgba(212,197,168,0.3);
+    opacity: 0;
+  }
+  @keyframes particleSend {
+    0% {
+      opacity: 1;
+      transform: translate(0, 0) scale(1);
+    }
+    20% {
+      opacity: 1;
+    }
+    100% {
+      opacity: 0;
+      transform: translate(var(--tx), var(--ty)) scale(0.2);
+    }
+  }
+
+  /* 发送确认文字 */
+  .kol-send-confirm {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 4;
+    text-align: center;
+    opacity: 0;
+    transition: opacity 0.6s ease;
+    pointer-events: none;
+  }
+  .kol-send-confirm.visible { opacity: 1; }
+  .kol-send-confirm-text {
+    font-size: 20px; font-weight: 700;
+    color: rgba(212,197,168,0.75);
+    letter-spacing: 3px;
+    margin-bottom: 8px;
+  }
+  .kol-send-confirm-sub {
+    font-size: 12px;
+    color: rgba(255,255,255,0.2);
+  }
+
+  /* ===== KOL邀请记录浮窗 ===== */
+  .kol-history-float {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 220;
+    width: 380px;
+    max-height: 420px;
+    padding: 28px 24px;
+    border-radius: 14px;
+    background: linear-gradient(160deg, #252220, #1a1815);
+    border: 1px solid rgba(187,168,138,0.12);
+    box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+    display: none; flex-direction: column;
+    animation: ceremonyFadeIn 0.3s ease;
+  }
+  .kol-history-float.active { display: flex; }
+  .kol-history-float-header {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 18px;
+  }
+  .kol-history-float-title {
+    font-size: 14px; font-weight: 700;
+    color: rgba(212,197,168,0.7);
+  }
+  .kol-history-float-close {
+    width: 28px; height: 28px; border-radius: 6px;
+    background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.06);
+    color: rgba(255,255,255,0.25); font-size: 14px;
+    cursor: pointer; display: flex; align-items: center; justify-content: center;
+    transition: all 0.2s;
+  }
+  .kol-history-float-close:hover {
+    background: rgba(255,255,255,0.08);
+    color: rgba(255,255,255,0.5);
+  }
+  .kol-history-list {
+    display: flex; flex-direction: column; gap: 8px;
+    overflow-y: auto; flex: 1;
+  }
+  .kol-history-item {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 10px 14px;
+    border-radius: 8px;
+    background: rgba(255,255,255,0.02);
+    border: 1px solid rgba(255,255,255,0.03);
+  }
+  .kol-history-user {
+    display: flex; flex-direction: column; gap: 2px;
+  }
+  .kol-history-name {
+    font-size: 13px; color: rgba(255,255,255,0.5); font-weight: 500;
+  }
+  .kol-history-time {
+    font-size: 10px; color: rgba(255,255,255,0.15);
+  }
+  .kol-history-status {
+    font-size: 10px; padding: 3px 8px; border-radius: 4px;
+    background: rgba(120,200,120,0.08);
+    color: rgba(120,200,120,0.6);
+    font-weight: 500;
+  }
+  .kol-history-status.pending {
+    background: rgba(212,197,168,0.08);
+    color: rgba(212,197,168,0.5);
+  }
+
+  /* 右侧大卡轮播 */
+  .kol-right {
+    flex: 1;
+    height: 100%;
+    display: flex; flex-direction: column;
+    position: relative;
+    overflow: hidden;
+  }
+
+  /* 轮播导航 */
+  .kol-carousel-nav {
+    display: flex; gap: 0;
+    padding: 0 40px;
+    border-bottom: 1px solid rgba(187,168,138,0.06);
+    position: relative; z-index: 2;
+  }
+  .kol-carousel-tab {
+    padding: 16px 24px;
+    font-size: 12px; font-weight: 600; letter-spacing: 1px;
+    color: rgba(255,255,255,0.2);
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    transition: all 0.3s;
+    background: none; border-left: none; border-right: none; border-top: none;
+    font-family: inherit;
+  }
+  .kol-carousel-tab:hover { color: rgba(255,255,255,0.4); }
+  .kol-carousel-tab.active {
+    color: rgba(212,197,168,0.8);
+    border-bottom-color: rgba(212,197,168,0.5);
+  }
+
+  /* 大卡内容 */
+  .kol-card-area {
+    flex: 1;
+    position: relative;
+    overflow: hidden;
+  }
+  .kol-benefit-card {
+    position: absolute; inset: 0;
+    display: flex; flex-direction: column;
+    padding: 36px 40px 54px;
+    opacity: 0;
+    transition: opacity 0.6s ease, transform 0.6s ease;
+    transform: scale(0.96);
+    pointer-events: none;
+  }
+  .kol-benefit-card.active {
+    opacity: 1;
+    transform: scale(1);
+    pointer-events: auto;
+  }
+  .kol-card-top {
+    flex-shrink: 0;
+    margin-bottom: 22px;
+  }
+  .kol-card-title {
+    font-size: 20px; font-weight: 800;
+    color: rgba(212,197,168,0.85);
+    margin-bottom: 10px;
+    line-height: 1.35;
+    letter-spacing: 2px;
+  }
+  .kol-card-sub {
+    font-size: 13px; color: rgba(255,255,255,0.45);
+    line-height: 1.7;
+  }
+  /* 权益小卡区域 — 在视觉区上方 */
+  .kol-card-benefits {
+    display: flex; gap: 12px;
+    flex-shrink: 0;
+    margin-bottom: 14px;
+  }
+  .kol-mini-card {
+    flex: 1;
+    padding: 18px 16px;
+    border-radius: 8px;
+    background: rgba(255,255,255,0.02);
+    border: 1px solid rgba(187,168,138,0.06);
+    transition: border-color 0.2s, background 0.2s;
+  }
+  .kol-mini-card:hover {
+    border-color: rgba(187,168,138,0.18);
+    background: rgba(187,168,138,0.04);
+  }
+  .kol-mini-title {
+    font-size: 12px; font-weight: 700;
+    color: rgba(212,197,168,0.75);
+    margin-bottom: 6px;
+    letter-spacing: 0.5px;
+  }
+  .kol-mini-desc {
+    font-size: 11px; color: rgba(255,255,255,0.35);
+    line-height: 1.6;
+    font-style: italic;
+  }
+  .kol-card-visual {
+    flex: 1; min-height: 100px;
+    border-radius: 10px;
+    background: linear-gradient(135deg, rgba(187,168,138,0.04), rgba(187,168,138,0.01));
+    border: 1px solid rgba(187,168,138,0.06);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; color: rgba(255,255,255,0.08);
+    letter-spacing: 1px;
+  }
+
+  /* ===== 状态A - 未被邀请用户页面 ===== */
+  .uninvited-page {
+    position: absolute; inset: 0;
+    z-index: 200;
+    background: rgba(12,10,8,0.95);
+    display: none;
+    animation: ceremonyFadeIn 0.4s ease;
+  }
+  .uninvited-page.active { display: flex; }
+
+  /* 邀请链路纵向示意 */
+  .invite-chain {
+    margin: 0 36px;
+    padding: 24px 24px 28px;
+    flex-shrink: 0;
+    border-radius: 16px;
+    background: linear-gradient(160deg, rgba(42,37,32,0.3), rgba(18,15,12,0.15));
+    border: 1px solid rgba(187,168,138,0.1);
+  }
+  .invite-chain-title {
+    font-size: 11px; letter-spacing: 2px;
+    color: rgba(187,168,138,0.45);
+    font-weight: 600;
+    margin-bottom: 24px;
+  }
+  .chain-node {
+    display: flex; align-items: flex-start; gap: 16px;
+    position: relative;
+    padding-bottom: 28px;
+  }
+  .chain-node:last-child {
+    padding-bottom: 0;
+  }
+  /* 左侧竖线+圆点 */
+  .chain-dot-col {
+    display: flex; flex-direction: column; align-items: center;
+    flex-shrink: 0;
+    width: 20px;
+  }
+  .chain-dot {
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    background: rgba(187,168,138,0.25);
+    border: 2px solid rgba(187,168,138,0.35);
+    flex-shrink: 0;
+    position: relative;
+    z-index: 2;
+  }
+  .chain-node.completed .chain-dot {
+    background: rgba(212,197,168,0.6);
+    border-color: rgba(212,197,168,0.7);
+    box-shadow: 0 0 8px rgba(212,197,168,0.2);
+  }
+  .chain-node.current .chain-dot {
+    background: rgba(212,197,168,0.15);
+    border-color: rgba(212,197,168,0.3);
+    animation: chainPulse 2s ease-in-out infinite;
+  }
+  @keyframes chainPulse {
+    0%, 100% { box-shadow: 0 0 4px rgba(212,197,168,0.1); }
+    50% { box-shadow: 0 0 12px rgba(212,197,168,0.3); }
+  }
+  .chain-line {
+    flex: 1;
+    width: 1px;
+    background: linear-gradient(180deg, rgba(187,168,138,0.2), rgba(187,168,138,0.06));
+    margin-top: 4px;
+  }
+  .chain-node:last-child .chain-line { display: none; }
+
+  /* 右侧内容 */
+  .chain-content {
+    flex: 1;
+    padding-top: 0;
+  }
+  .chain-label {
+    font-size: 13px; font-weight: 700;
+    color: rgba(255,255,255,0.6);
+    margin-bottom: 4px;
+    line-height: 1.3;
+  }
+  .chain-node.completed .chain-label {
+    color: rgba(212,197,168,0.75);
+  }
+  .chain-node.current .chain-label {
+    color: rgba(255,255,255,0.4);
+  }
+  .chain-desc {
+    font-size: 11px;
+    color: rgba(255,255,255,0.2);
+    line-height: 1.6;
+  }
+  .chain-node.current .chain-desc {
+    color: rgba(255,255,255,0.15);
+  }
+  .chain-status-tag {
+    display: inline-block;
+    margin-top: 8px;
+    font-size: 9px;
+    padding: 3px 10px;
+    border-radius: 4px;
+    letter-spacing: 1.5px;
+    font-weight: 600;
+  }
+  .chain-node.completed .chain-status-tag {
+    background: rgba(212,197,168,0.08);
+    color: rgba(212,197,168,0.5);
+  }
+  .chain-node.current .chain-status-tag {
+    background: rgba(255,255,255,0.03);
+    color: rgba(255,255,255,0.2);
+    border: 1px solid rgba(255,255,255,0.06);
+  }
+
+  /* 用户当前状态提示 */
+  .uninvited-status {
+    margin: 20px 36px 0;
+    padding: 20px 24px;
+    border-radius: 12px;
+    background: rgba(255,255,255,0.02);
+    border: 1px solid rgba(255,255,255,0.05);
+    text-align: center;
+  }
+  .uninvited-status-label {
+    font-size: 9px; letter-spacing: 2px;
+    color: rgba(255,255,255,0.2);
+    font-weight: 600;
+    margin-bottom: 8px;
+  }
+  .uninvited-status-text {
+    font-size: 16px; font-weight: 800;
+    color: rgba(255,255,255,0.35);
+    margin-bottom: 6px;
+    letter-spacing: 1px;
+  }
+  .uninvited-status-desc {
+    font-size: 11px;
+    color: rgba(255,255,255,0.15);
+    line-height: 1.5;
+  }
+
+  /* ===== 底部战队背书条 ===== */
+  .kol-trust-bar {
+    position: absolute; bottom: 0; left: 0; right: 0;
+    height: 44px;
+    display: flex; align-items: center; justify-content: center; gap: 16px;
+    background: rgba(187,168,138,0.04);
+    border-top: 1px solid rgba(187,168,138,0.08);
+    z-index: 5;
+  }
+  .kol-trust-text {
+    font-size: 12px; color: rgba(255,255,255,0.35);
+  }
+  .kol-trust-text strong {
+    color: rgba(187,168,138,0.7); font-weight: 700; font-size: 13px;
+  }
+  .kol-trust-divider {
+    width: 1px; height: 16px;
+    background: rgba(187,168,138,0.15);
+  }
+  .kol-trust-teams {
+    display: flex; gap: 5px;
+  }
+  .kol-team-logo {
+    width: 28px; height: 28px; border-radius: 6px;
+    background: rgba(187,168,138,0.06);
+    border: 1px solid rgba(187,168,138,0.1);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 9px; font-weight: 700;
+    color: rgba(187,168,138,0.5);
+    letter-spacing: 0;
+  }
+</style>
+</head>
+<body>
+  <div class="page-title">冠军专线 · 邀请制链路原型</div>
+  <div class="page-sub">多视角原型：受邀用户链路 + 邀请者(KOL)视角</div>
+
+  <div class="state-toggle">
+    <button class="state-btn active" onclick="resetAll()">默认状态</button>
+    <button class="state-btn" onclick="openMessageCenter()">消息中心</button>
+    <button class="state-btn" onclick="openCeremony()">邀请仪式页</button>
+    <button class="state-btn" onclick="openGameSelect()">选择游戏</button>
+    <button class="state-btn" onclick="openActivation()">激活成功</button>
+    <button class="state-btn" onclick="openKolPage()" style="background:rgba(212,197,168,0.08);border-color:rgba(212,197,168,0.2)">邀请者(KOL)</button>
+    <button class="state-btn" onclick="openUninvitedPage()" style="background:rgba(212,197,168,0.08);border-color:rgba(212,197,168,0.2)">未被邀请</button>
+  </div>
+
+  <!-- 客户端窗口 -->
+  <div class="client-window">
+
+    <!-- 顶部栏 -->
+    <div class="top-bar">
+      <div class="top-logo">
+        <span class="top-logo-text">biubiu</span>
+        <span class="top-logo-badge">阿里巴巴</span>
+      </div>
+      <button class="top-nav-btn">🎓 学生优惠</button>
+      <div class="top-search">
+        <span class="top-search-icon">🔍</span>
+        <span class="top-search-text">搜索游戏</span>
+      </div>
+      <div class="top-actions">
+        <button class="top-action-btn">✦ 兑换</button>
+        <button class="top-action-btn">🎓 学生优惠</button>
+        <!-- 更多按钮 + 下拉菜单 -->
+        <div class="more-menu-wrap">
+          <button class="top-action-btn more-btn" onclick="toggleMoreMenu()">
+            ⊞
+            <div class="msg-dot"></div>
+          </button>
+          <div class="more-dropdown" id="moreDropdown">
+            <div class="more-dropdown-item" onclick="openMessageCenter()">
+              <span class="more-item-icon">🔔</span>
+              <span>我的消息</span>
+              <span class="more-item-dot"></span>
+            </div>
+            <div class="more-dropdown-item">
+              <span class="more-item-icon">💬</span>
+              <span>智能客服</span>
+            </div>
+            <div class="more-dropdown-item">
+              <span class="more-item-icon">✏️</span>
+              <span>问题反馈</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="top-window-controls">
+        <div class="win-ctrl">−</div>
+        <div class="win-ctrl">□</div>
+        <div class="win-ctrl">✕</div>
+      </div>
+    </div>
+
+    <!-- 主体 -->
+    <div class="client-body">
+
+      <!-- 左侧栏 -->
+      <div class="left-sidebar">
+        <!-- 限免福利池 -->
+        <div class="free-pool-banner">
+          <div class="free-pool-title">限免福利池</div>
+          <div class="free-pool-sub">· 限免天天有 福利享不停 ·</div>
+        </div>
+        <div class="sidebar-section-title">我的游戏 <span>(16) →</span></div>
+        <div class="game-list">
+          <div class="game-item">
+            <div class="game-thumb">PUBG</div>
+            <div class="game-info">
+              <div class="game-name">绝地求生</div>
+              <div class="game-tag">限免</div>
+            </div>
+          </div>
+          <div class="game-item">
+            <div class="game-thumb">AION</div>
+            <div class="game-info">
+              <div class="game-name">永恒之塔2</div>
+            </div>
+          </div>
+          <div class="game-item active">
+            <div class="game-thumb">SF6</div>
+            <div class="game-info">
+              <div class="game-name">街头霸王6</div>
+            </div>
+          </div>
+          <div class="game-item">
+            <div class="game-thumb">Steam</div>
+            <div class="game-info">
+              <div class="game-name">Steam商店与社区</div>
+              <div class="game-tag">限免</div>
+            </div>
+          </div>
+        </div>
+        <div class="add-game">+ 添加游戏</div>
+      </div>
+
+      <!-- 中央区域 -->
+      <div class="center-area">
+        <div class="game-detail-bg"></div>
+        <!-- 冠军选手 -->
+        <div class="champion-figure">
+          <div class="champion-figure-placeholder">[冠军选手形象]</div>
+          <div class="champion-name-block">
+            <div class="champion-sign">Jian Mai</div>
+            <div class="champion-realname">曾卓君</div>
+            <div class="champion-alias">「小孩」</div>
+          </div>
+        </div>
+        <!-- 游戏信息 -->
+        <div class="game-detail-info">
+          <div class="game-logo-placeholder">SF6</div>
+          <div class="game-detail-title">街头霸王6</div>
+          <div class="game-detail-subtitle">同步加速 Steam</div>
+          <button class="accelerate-btn">电竞加速</button>
+        </div>
+        <!-- 品牌标语 -->
+        <div class="brand-slogan">
+          <div class="brand-slogan-main">生来为赢</div>
+          <div class="brand-slogan-sub">biubiu加速器，电竞冠军都在用</div>
+        </div>
+      </div>
+
+      <!-- 右侧栏 -->
+      <div class="right-sidebar">
+        <div class="right-champion-banner">
+          <div class="right-champion-banner-text">生来为赢</div>
+        </div>
+        <div class="right-tools-title">工具</div>
+        <div class="tool-item">
+          <div class="tool-icon">🔗</div>
+          <div class="tool-name">好友联机低延迟</div>
+          <div class="tool-arrow">›</div>
+        </div>
+        <div class="tool-item">
+          <div class="tool-icon">📊</div>
+          <div class="tool-name">角色排位数据</div>
+          <div class="tool-arrow">›</div>
+        </div>
+        <div class="tool-item">
+          <div class="tool-icon">🎮</div>
+          <div class="tool-name">MOD</div>
+          <div class="tool-arrow">›</div>
+        </div>
+        <div class="tool-item">
+          <div class="tool-icon">🎁</div>
+          <div class="tool-name">直播掉宝</div>
+          <div class="tool-arrow">›</div>
+        </div>
+        <div class="tool-item">
+          <div class="tool-icon">🛡️</div>
+          <div class="tool-name">加速保障Q群</div>
+          <div class="tool-arrow">›</div>
+        </div>
+        <div class="tool-item">
+          <div class="tool-icon">📖</div>
+          <div class="tool-name">官方手册</div>
+          <div class="tool-arrow">›</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== 全屏页（覆盖整个客户端窗口含顶栏） ===== -->
+    <!-- 全屏消息中心 -->
+      <div class="message-center" id="messageCenter">
+        <!-- 消息中心顶部栏 -->
+        <div class="mc-topbar">
+          <div class="mc-back" onclick="closeMessageCenter()">‹ 返回</div>
+          <div class="mc-title">消息中心</div>
+          <div class="mc-actions">
+            <span class="mc-action-link">全部已读</span>
+            <span class="mc-action-btn">清理消息 ⓘ</span>
+          </div>
+        </div>
+        <!-- 消息列表 -->
+        <div class="mc-list">
+          <!-- 冠军专线邀请函 - 特殊卡片 -->
+          <div class="mc-item mc-invitation" onclick="openCeremony()">
+            <div class="mc-item-header">
+              <div class="mc-item-title">🏆 加入冠军行列 <span class="mc-invitation-badge">邀请函</span></div>
+              <div class="mc-item-meta">
+                <span class="mc-item-source mc-source-champion">XDD 左梓轩</span>
+                <span class="mc-item-time">2026-06-03 14:22</span>
+              </div>
+            </div>
+            <div class="mc-item-desc">认真对待每一局的人，值得冠军级的网络体验</div>
+          </div>
+          <!-- 普通消息 -->
+          <div class="mc-item">
+            <div class="mc-item-header">
+              <div class="mc-item-title">PUBG星际乱斗4月8日上线</div>
+              <div class="mc-item-meta">
+                <span class="mc-item-source">福利biu</span>
+                <span class="mc-item-time">2026-04-08 18:34</span>
+              </div>
+            </div>
+            <div class="mc-item-desc">biubiu加速器联合PCL送福利，再瓜分100万G-COIN！</div>
+          </div>
+          <div class="mc-item">
+            <div class="mc-item-header">
+              <div class="mc-item-title">街霸6新赛季加速节点优化通知</div>
+              <div class="mc-item-meta">
+                <span class="mc-item-source">系统通知</span>
+                <span class="mc-item-time">2026-03-25 10:15</span>
+              </div>
+            </div>
+            <div class="mc-item-desc">针对街霸6新赛季对战服务器，已完成港服/日服节点优化升级</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 全屏邀请仪式页 -->
+      <div class="invite-ceremony" id="inviteCeremony">
+        <div class="ceremony-dim"></div>
+        <div class="ceremony-light-seam"></div>
+        <div class="ceremony-light-flood"></div>
+        <div class="ceremony-close" onclick="closeCeremony()">✕</div>
+        <div class="ceremony-content">
+          <div class="invite-card-wrapper">
+          <div class="invite-card" id="inviteCard">
+            <div class="invite-card-sheen" id="cardSheen"></div>
+            <div class="invite-card-label">CHAMPION LINE · 邀请函</div>
+            <div class="invite-from-section">
+              <div class="invite-from-label">来自</div>
+              <div class="invite-from-name">XDD · 左梓轩</div>
+              <div class="invite-from-title">PUBG 职业选手 · BiuBiu冠军专线成员</div>
+              <div class="invite-from-signature">ZuoZixuan</div>
+            </div>
+            <div class="invite-divider"></div>
+            <div class="invite-message">
+              邀请你加入<em>冠军专线</em><br>
+              与冠军共享同一套专属服务标准
+            </div>
+            <div class="invite-seat-info">
+              <div class="invite-seat-label">你的席位编号</div>
+              <div class="invite-seat-num">#007</div>
+            </div>
+          </div>
+          </div>
+          <button class="join-btn" onclick="transitionToGameSelect()">加入冠军行列</button>
+          <div class="ceremony-hint">加入后将绑定一款游戏，不可更改</div>
+        </div>
+
+        <!-- 铭牌（收窄后） -->
+        <div class="ceremony-nameplate" id="ceremonyNameplate">
+          <div class="ceremony-nameplate-brand">CHAMPION LINE</div>
+          <div class="ceremony-nameplate-num">#007</div>
+        </div>
+
+        <!-- 游戏选择（内嵌在仪式页中） -->
+        <div class="game-select-inline" id="gameSelectInline">
+          <div class="game-silhouette game-silhouette-left" id="silhouetteLeft">
+            <div class="silhouette-signature" id="silhouetteSignature"></div>
+          </div>
+          <div class="game-silhouette game-silhouette-right" id="silhouetteRight"></div>
+          <div class="game-select-content">
+            <div class="game-select-title">CHAMPION LINE</div>
+            <div class="game-select-heading">选择你的赛场</div>
+            <div class="game-select-sub">席位将绑定所选游戏，选定后不可更改</div>
+            <div class="game-select-grid">
+              <div class="game-select-card" data-game="pubg" onclick="selectGame(this)">
+                <div class="game-select-card-icon">🔫</div>
+                <div class="game-select-card-name">绝地求生</div>
+                <div class="game-select-card-champion">冠军: XDD</div>
+              </div>
+              <div class="game-select-card" data-game="sf6" onclick="selectGame(this)">
+                <div class="game-select-card-icon">👊</div>
+                <div class="game-select-card-name">街头霸王6</div>
+                <div class="game-select-card-champion">冠军: 小孩</div>
+              </div>
+              <div class="game-select-card" data-game="aion" onclick="selectGame(this)">
+                <div class="game-select-card-icon">⚔️</div>
+                <div class="game-select-card-name">永恒之塔2</div>
+                <div class="game-select-card-champion">冠军: 永军</div>
+              </div>
+            </div>
+            <button class="confirm-btn" id="confirmBtn" onclick="openActivation()">确认选择</button>
+            <div class="game-select-warn">⚠ 选定后不可更改，请谨慎选择</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 激活成功页 -->
+      <div class="activation-page" id="activationPage">
+        <div class="activation-content">
+          <div class="activation-label">CHAMPION LINE</div>
+          <div class="activation-welcome">欢迎加入冠军行列</div>
+          <div class="nameplate">
+            <div class="nameplate-brand">CHAMPION LINE</div>
+            <div class="nameplate-number">#007</div>
+            <div class="nameplate-game">绝地求生 · PUBG</div>
+            <div class="nameplate-inviter">由 XDD 邀请</div>
+            <div class="nameplate-divider"></div>
+            <div class="nameplate-user">Player_007</div>
+          </div>
+          <button class="activation-done-btn" onclick="resetAll()">进入冠军专线</button>
+        </div>
+      </div>
+
+      <!-- KOL邀请者页面 -->
+      <!-- ===== 状态A：未被邀请用户页面 ===== -->
+      <div class="uninvited-page" id="uninvitedPage">
+
+        <!-- 左侧：品牌+邀请链路 -->
+        <div class="kol-left">
+          <div class="kol-brand-area">
+            <div class="kol-brand-tag">冠军专线</div>
+            <div class="kol-title">冠军之选<br>为赢而生</div>
+            <div class="kol-subtitle">认真对待每一局的人，值得冠军级的网络体验</div>
+          </div>
+
+          <!-- 邀请链路示意 -->
+          <div class="invite-chain">
+            <div class="invite-chain-title">邀 请 制 · 入 席 链 路</div>
+
+            <!-- 节点1：首批席位 -->
+            <div class="chain-node completed">
+              <div class="chain-dot-col">
+                <div class="chain-dot"></div>
+                <div class="chain-line"></div>
+              </div>
+              <div class="chain-content">
+                <div class="chain-label">首批席位开放</div>
+                <div class="chain-desc">面向职业选手与合作主播开放，在真实赛训中深度验证与调优。</div>
+                <div class="chain-status-tag">已完成</div>
+              </div>
+            </div>
+
+            <!-- 节点2：第二批席位 -->
+            <div class="chain-node completed">
+              <div class="chain-dot-col">
+                <div class="chain-dot"></div>
+                <div class="chain-line"></div>
+              </div>
+              <div class="chain-content">
+                <div class="chain-label">第二批席位邀请</div>
+                <div class="chain-desc">由首批席位拥有者，向他们认可的玩家发出邀请。</div>
+                <div class="chain-status-tag">进行中</div>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- 用户当前状态 — 独立区域 -->
+          <div class="uninvited-status">
+            <div class="uninvited-status-label">你的席位状态</div>
+            <div class="uninvited-status-text">等待邀请</div>
+            <div class="uninvited-status-desc">冠军专线仅通过邀请开放，无法直接购买。</div>
+          </div>
+        </div>
+
+        <!-- 右侧：权益展示（复用KOL右侧结构） -->
+        <div class="kol-right">
+          <div class="kol-carousel-nav">
+            <button class="kol-carousel-tab active" onclick="switchUninvitedCard(0, this)">巅峰配置</button>
+            <button class="kol-carousel-tab" onclick="switchUninvitedCard(1, this)">专属冠冕</button>
+            <button class="kol-carousel-tab" onclick="switchUninvitedCard(2, this)">尊享护航</button>
+          </div>
+          <div class="kol-card-area">
+            <!-- 卡1: 技术特权 -->
+            <div class="kol-benefit-card active">
+              <div class="kol-card-top">
+                <div class="kol-card-title">冠军操作，不该受限</div>
+                <div class="kol-card-sub">决胜往往只在一瞬之间，我们要守住的，就是不让任何延迟与波动，碰到你那次足以改写比赛走向的关键出手。</div>
+              </div>
+              <div class="kol-card-benefits">
+                <div class="kol-mini-card">
+                  <div class="kol-mini-title">独享冠军加速节点</div>
+                  <div class="kol-mini-desc">关键时刻，快的不只是网络，更是你的出手。</div>
+                </div>
+                <div class="kol-mini-card">
+                  <div class="kol-mini-title">专属的带宽资源</div>
+                  <div class="kol-mini-desc">高峰时段依然从容，你的通道始终被优先保障。</div>
+                </div>
+                <div class="kol-mini-card">
+                  <div class="kol-mini-title">游戏场景智能适配</div>
+                  <div class="kol-mini-desc">比赛节奏会变，加速策略也该跟着变。</div>
+                </div>
+              </div>
+              <div class="kol-card-visual">[ 冠军网络架构示意 — 交付UI ]</div>
+            </div>
+            <!-- 卡2: 身份特权 -->
+            <div class="kol-benefit-card">
+              <div class="kol-card-top">
+                <div class="kol-card-title">冠军登场，不该普通</div>
+                <div class="kol-card-sub">从你出现的那一刻起，冠军该有的分量、排面与尊贵，就该先一步被看见。</div>
+              </div>
+              <div class="kol-card-benefits">
+                <div class="kol-mini-card">
+                  <div class="kol-mini-title">冠军专属客户端主题</div>
+                  <div class="kol-mini-desc">打开客户端的那一刻，就知道这是你的主场。</div>
+                </div>
+                <div class="kol-mini-card">
+                  <div class="kol-mini-title">独一无二的席位编号</div>
+                  <div class="kol-mini-desc">专属编号在身，独特身份一眼可见。</div>
+                </div>
+                <div class="kol-mini-card">
+                  <div class="kol-mini-title">游戏定制的冠军动效</div>
+                  <div class="kol-mini-desc">每一次亮相，都该配得上冠军应有的光芒。</div>
+                </div>
+              </div>
+              <div class="kol-card-visual">[ 冠军铭牌 & 游戏内标识 — 交付UI ]</div>
+            </div>
+            <!-- 卡3: 服务特权 -->
+            <div class="kol-benefit-card">
+              <div class="kol-card-top">
+                <div class="kol-card-title">冠军待遇，不该缺席</div>
+                <div class="kol-card-sub">你不是一个人在战斗。从问题出现时的即时响应，到对局结束后的复盘分析，都有人在你身后。</div>
+              </div>
+              <div class="kol-card-benefits">
+                <div class="kol-mini-card">
+                  <div class="kol-mini-title">专属1V1技术专家</div>
+                  <div class="kol-mini-desc">遇到问题，永远有人第一时间为你解决。</div>
+                </div>
+                <div class="kol-mini-card">
+                  <div class="kol-mini-title">冠军席位服务群</div>
+                  <div class="kol-mini-desc">专属群内即时响应，让重视感从不缺席。</div>
+                </div>
+                <div class="kol-mini-card">
+                  <div class="kol-mini-title">专属赛后网络战报</div>
+                  <div class="kol-mini-desc">不放过每一次波动，只为每一局都精益求精。</div>
+                </div>
+              </div>
+              <div class="kol-card-visual">[ 专属服务通道示意 — 交付UI ]</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 底部战队背书条 -->
+        <div class="kol-trust-bar">
+          <span class="kol-trust-text">冠军专线已为 <strong>16+</strong> 职业战队提供赛训支持</span>
+          <div class="kol-trust-divider"></div>
+          <div class="kol-trust-teams">
+            <div class="kol-team-logo">T1</div>
+            <div class="kol-team-logo">EDG</div>
+            <div class="kol-team-logo">TS</div>
+            <div class="kol-team-logo">WBG</div>
+            <div class="kol-team-logo">JDG</div>
+            <div class="kol-team-logo">+11</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="kol-page" id="kolPage">
+
+        <!-- 左侧：品牌+操作 -->
+        <div class="kol-left">
+          <!-- 品牌标题区 -->
+          <div class="kol-brand-area">
+            <div class="kol-brand-tag">冠军专线</div>
+            <div class="kol-title">冠军之选<br>为赢而生</div>
+            <div class="kol-subtitle">认真对待每一局的人，值得冠军级的网络体验</div>
+          </div>
+
+          <!-- 铭牌主体 -->
+          <div class="kol-identity">
+            <div class="kol-identity-card">
+              <div class="kol-id-brand">CHAMPION LINE</div>
+              <div class="kol-id-row">
+                <div class="kol-id-name">XDD</div>
+                <div class="kol-id-num">#001</div>
+              </div>
+              <div class="kol-id-meta">绝地求生 · PUBG 职业选手</div>
+              <div class="kol-id-badge">官方邀请</div>
+              <!-- 技术专家入口 -->
+              <div class="kol-id-service" onclick="openKolQrCode()">专属技术专家 ›</div>
+            </div>
+
+            <!-- 发出邀请 -->
+            <button class="kol-invite-main" onclick="openKolInvite()">邀请入席</button>
+
+            <!-- 名额（点击查看记录） -->
+            <div class="kol-quota-link" onclick="openKolHistory()">剩余邀请名额 <em>3</em> / 5</div>
+          </div>
+        </div>
+
+        <!-- 邀请仪式浮层 -->
+        <div class="kol-invite-overlay" id="kolInviteOverlay">
+          <!-- 仪式动效层 -->
+          <div class="kol-ceremony-dim" id="kolCeremonyDim"></div>
+          <div class="kol-ceremony-dust" id="kolCeremonyDust"></div>
+          <div class="kol-ceremony-light" id="kolCeremonyLight"></div>
+
+          <!-- 请柬 -->
+          <div class="kol-letter" id="kolLetter">
+            <div class="kol-letter-inner">
+              <!-- 顶部品牌印记 -->
+              <div class="kol-letter-brand">CHAMPION LINE</div>
+              <div class="kol-letter-rule"></div>
+
+              <!-- TO 收信人 -->
+              <div class="kol-letter-to">
+                <span class="kol-letter-to-label">TO</span>
+                <button class="kol-letter-to-btn" id="kolToBtn" onclick="activateUidInput()">点击输入 BiuBiu UID</button>
+                <input class="kol-letter-to-input" id="kolToInput" type="text" placeholder="输入 BiuBiu UID" style="display:none">
+              </div>
+
+              <!-- 请柬正文 -->
+              <div class="kol-letter-body">
+                <p class="kol-letter-line1">每一个站在巅峰的人，</p>
+                <p class="kol-letter-line2">都曾被另一个冠军选中。</p>
+                <p class="kol-letter-line3">现在，你被邀请加入冠军行列。</p>
+              </div>
+
+              <div class="kol-letter-rule kol-letter-rule-bottom"></div>
+
+              <!-- 签名 -->
+              <div class="kol-letter-sign">
+                <div class="kol-letter-sign-label">邀请人</div>
+                <div class="kol-letter-sign-name">XDD</div>
+              </div>
+
+              <!-- 发出 -->
+              <button class="kol-letter-send" onclick="sendKolInvite()">发出邀请</button>
+            </div>
+
+            <!-- 关闭 -->
+            <button class="kol-letter-close" onclick="closeKolInvite()">✕</button>
+          </div>
+
+          <!-- 发送粒子 -->
+          <div class="kol-send-particles" id="kolSendParticles"></div>
+
+          <!-- 发送确认 -->
+          <div class="kol-send-confirm" id="kolSendConfirm">
+            <div class="kol-send-confirm-text">邀请已送出</div>
+            <div class="kol-send-confirm-sub" id="kolSendConfirmUid"></div>
+          </div>
+        </div>
+
+        <!-- 邀请记录浮窗 -->
+        <div class="kol-history-float" id="kolHistoryFloat">
+          <div class="kol-history-float-header">
+            <div class="kol-history-float-title">邀请记录</div>
+            <button class="kol-history-float-close" onclick="closeKolHistory()">✕</button>
+          </div>
+          <div class="kol-history-list">
+            <div class="kol-history-item">
+              <div class="kol-history-user">
+                <div class="kol-history-name">Player_007</div>
+                <div class="kol-history-time">2026-06-03 14:22</div>
+              </div>
+              <div class="kol-history-status">已激活</div>
+            </div>
+            <div class="kol-history-item">
+              <div class="kol-history-user">
+                <div class="kol-history-name">夜行星辰</div>
+                <div class="kol-history-time">2026-06-01 09:15</div>
+              </div>
+              <div class="kol-history-status pending">待接受</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 右侧：大卡轮播权益 -->
+        <div class="kol-right">
+          <div class="kol-carousel-nav">
+            <button class="kol-carousel-tab active" onclick="switchKolCard(0, this)">巅峰配置</button>
+            <button class="kol-carousel-tab" onclick="switchKolCard(1, this)">专属冠冕</button>
+            <button class="kol-carousel-tab" onclick="switchKolCard(2, this)">尊享护航</button>
+          </div>
+          <div class="kol-card-area">
+            <!-- 卡1: 技术特权 -->
+            <div class="kol-benefit-card active">
+              <div class="kol-card-top">
+                <div class="kol-card-title">冠军操作，不该受限</div>
+                <div class="kol-card-sub">决胜往往只在一瞬之间，我们要守住的，就是不让任何延迟与波动，碰到你那次足以改写比赛走向的关键出手。</div>
+              </div>
+              <div class="kol-card-benefits">
+                <div class="kol-mini-card">
+                  <div class="kol-mini-title">独享冠军加速节点</div>
+                  <div class="kol-mini-desc">关键时刻，快的不只是网络，更是你的出手。</div>
+                </div>
+                <div class="kol-mini-card">
+                  <div class="kol-mini-title">专属的带宽资源</div>
+                  <div class="kol-mini-desc">高峰时段依然从容，你的通道始终被优先保障。</div>
+                </div>
+                <div class="kol-mini-card">
+                  <div class="kol-mini-title">游戏场景智能适配</div>
+                  <div class="kol-mini-desc">比赛节奏会变，加速策略也该跟着变。</div>
+                </div>
+              </div>
+              <div class="kol-card-visual">[ 冠军网络架构示意 — 交付UI ]</div>
+            </div>
+            <!-- 卡2: 身份特权 -->
+            <div class="kol-benefit-card">
+              <div class="kol-card-top">
+                <div class="kol-card-title">冠军登场，不该普通</div>
+                <div class="kol-card-sub">从你出现的那一刻起，冠军该有的分量、排面与尊贵，就该先一步被看见。</div>
+              </div>
+              <div class="kol-card-benefits">
+                <div class="kol-mini-card">
+                  <div class="kol-mini-title">冠军专属客户端主题</div>
+                  <div class="kol-mini-desc">打开客户端的那一刻，就知道这是你的主场。</div>
+                </div>
+                <div class="kol-mini-card">
+                  <div class="kol-mini-title">独一无二的席位编号</div>
+                  <div class="kol-mini-desc">专属编号在身，独特身份一眼可见。</div>
+                </div>
+                <div class="kol-mini-card">
+                  <div class="kol-mini-title">游戏定制的冠军动效</div>
+                  <div class="kol-mini-desc">每一次亮相，都该配得上冠军应有的光芒。</div>
+                </div>
+              </div>
+              <div class="kol-card-visual">[ 冠军铭牌 & 游戏内标识 — 交付UI ]</div>
+            </div>
+            <!-- 卡3: 服务特权 -->
+            <div class="kol-benefit-card">
+              <div class="kol-card-top">
+                <div class="kol-card-title">冠军待遇，不该缺席</div>
+                <div class="kol-card-sub">你不是一个人在战斗。从问题出现时的即时响应，到对局结束后的复盘分析，都有人在你身后。</div>
+              </div>
+              <div class="kol-card-benefits">
+                <div class="kol-mini-card">
+                  <div class="kol-mini-title">专属1V1技术专家</div>
+                  <div class="kol-mini-desc">遇到问题，永远有人第一时间为你解决。</div>
+                </div>
+                <div class="kol-mini-card">
+                  <div class="kol-mini-title">冠军席位服务群</div>
+                  <div class="kol-mini-desc">专属群内即时响应，让重视感从不缺席。</div>
+                </div>
+                <div class="kol-mini-card">
+                  <div class="kol-mini-title">专属赛后网络战报</div>
+                  <div class="kol-mini-desc">不放过每一次波动，只为每一局都精益求精。</div>
+                </div>
+              </div>
+              <div class="kol-card-visual">[ 专属服务通道示意 — 交付UI ]</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 底部战队背书条 -->
+        <div class="kol-trust-bar">
+          <span class="kol-trust-text">冠军专线已为 <strong>16+</strong> 职业战队提供赛训支持</span>
+          <div class="kol-trust-divider"></div>
+          <div class="kol-trust-teams">
+            <div class="kol-team-logo">T1</div>
+            <div class="kol-team-logo">EDG</div>
+            <div class="kol-team-logo">TS</div>
+            <div class="kol-team-logo">WBG</div>
+            <div class="kol-team-logo">JDG</div>
+            <div class="kol-team-logo">+11</div>
+          </div>
+        </div>
+
+      </div>
+
+  </div>
+
+<script>
+  // 状态管理
+  function resetAll() {
+    document.getElementById('messageCenter').classList.remove('active');
+    const ceremony = document.getElementById('inviteCeremony');
+    ceremony.className = 'invite-ceremony';
+    document.getElementById('ceremonyNameplate').classList.remove('visible');
+    const gsi = document.getElementById('gameSelectInline');
+    if (gsi) { gsi.style.opacity = ''; gsi.style.pointerEvents = ''; }
+    document.getElementById('activationPage').classList.remove('active');
+    document.getElementById('kolPage').classList.remove('active');
+    document.getElementById('uninvitedPage').classList.remove('active');
+    stopKolCarousel();
+    stopUninvitedCarousel();
+    document.getElementById('kolInviteOverlay').classList.remove('active');
+    document.getElementById('kolHistoryFloat').classList.remove('active');
+    document.getElementById('moreDropdown').classList.remove('active');
+    updateBtns(0);
+  }
+
+  // 更多菜单
+  function toggleMoreMenu() {
+    document.getElementById('moreDropdown').classList.toggle('active');
+  }
+
+  // 消息中心
+  function openMessageCenter() {
+    resetAll();
+    document.getElementById('messageCenter').classList.add('active');
+    updateBtns(1);
+  }
+
+  function closeMessageCenter() {
+    document.getElementById('messageCenter').classList.remove('active');
+    updateBtns(0);
+  }
+
+  function openCeremony() {
+    resetAll();
+    const el = document.getElementById('inviteCeremony');
+    el.className = 'invite-ceremony active';
+    updateBtns(2);
+
+    // 阶段1: 暗场
+    requestAnimationFrame(() => el.classList.add('phase-dim'));
+
+    // 阶段2: 光缝出现
+    setTimeout(() => el.classList.add('phase-seam'), 500);
+
+    // 阶段3: 光渗透扩散
+    setTimeout(() => el.classList.add('phase-flood'), 1000);
+
+    // 阶段4: 内容显现
+    setTimeout(() => el.classList.add('phase-reveal'), 1800);
+  }
+
+  function closeCeremony() {
+    const el = document.getElementById('inviteCeremony');
+    el.className = 'invite-ceremony';
+    updateBtns(0);
+  }
+
+  // 邀请函卡片3D悬浮跟随
+  (function() {
+    const card = document.getElementById('inviteCard');
+    const sheen = document.getElementById('cardSheen');
+    if (!card) return;
+
+    card.addEventListener('mousemove', function(e) {
+      const rect = card.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+      const centerX = rect.width / 2;
+      const centerY = rect.height / 2;
+
+      // 最大旋转角度8度
+      const rotateY = ((x - centerX) / centerX) * 8;
+      const rotateX = ((centerY - y) / centerY) * 4;
+
+      card.style.transform = `rotateY(${rotateY}deg) rotateX(${rotateX}deg)`;
+
+      // 光泽跟随鼠标位置
+      if (sheen) {
+        const sheenX = (x / rect.width) * 100;
+        sheen.style.background = `linear-gradient(105deg, transparent ${sheenX - 15}%, rgba(212,197,168,0.04) ${sheenX - 5}%, rgba(212,197,168,0.08) ${sheenX}%, rgba(212,197,168,0.04) ${sheenX + 5}%, transparent ${sheenX + 15}%)`;
+      }
+    });
+
+    card.addEventListener('mouseleave', function() {
+      card.style.transform = 'rotateY(0deg) rotateX(0deg)';
+      if (sheen) sheen.style.background = '';
+    });
+  })();
+
+  function transitionToGameSelect() {
+    const ceremony = document.getElementById('inviteCeremony');
+    ceremony.classList.add('phase-game');
+    updateBtns(3);
+
+    // 铭牌延迟显现
+    setTimeout(() => {
+      document.getElementById('ceremonyNameplate').classList.add('visible');
+    }, 500);
+
+    // 重置游戏选择
+    document.querySelectorAll('.game-select-card').forEach(c => c.classList.remove('selected'));
+    document.getElementById('confirmBtn').classList.remove('enabled');
+  }
+
+  // 保留直接跳转（demo用）
+  function openGameSelect() {
+    resetAll();
+    const ceremony = document.getElementById('inviteCeremony');
+    ceremony.className = 'invite-ceremony active phase-dim phase-reveal phase-game';
+    document.getElementById('ceremonyNameplate').classList.add('visible');
+    document.getElementById('gameSelectInline').style.opacity = '1';
+    document.getElementById('gameSelectInline').style.pointerEvents = 'auto';
+    updateBtns(3);
+    document.querySelectorAll('.game-select-card').forEach(c => c.classList.remove('selected'));
+    document.getElementById('confirmBtn').classList.remove('enabled');
+  }
+
+  function closeGameSelect() {
+    const ceremony = document.getElementById('inviteCeremony');
+    ceremony.className = 'invite-ceremony';
+    document.getElementById('ceremonyNameplate').classList.remove('visible');
+    document.getElementById('gameSelectInline').style.opacity = '';
+    document.getElementById('gameSelectInline').style.pointerEvents = '';
+    updateBtns(0);
+  }
+
+  function selectGame(card) {
+    document.querySelectorAll('.game-select-card').forEach(c => c.classList.remove('selected'));
+    card.classList.add('selected');
+    document.getElementById('confirmBtn').classList.add('enabled');
+
+    // 更新剪影背景
+    const game = card.dataset.game;
+    const left = document.getElementById('silhouetteLeft');
+    const right = document.getElementById('silhouetteRight');
+    const sig = document.getElementById('silhouetteSignature');
+
+    // 先淡出
+    left.classList.remove('visible');
+    right.classList.remove('visible');
+
+    setTimeout(() => {
+      left.className = 'game-silhouette game-silhouette-left ' + game;
+      right.className = 'game-silhouette game-silhouette-right ' + game;
+
+      // 选手签名
+      const signatures = { pubg: 'XDD', sf6: 'Xiaohai', aion: 'YongJun' };
+      if (sig) sig.textContent = signatures[game] || '';
+
+      // 触发淡入
+      requestAnimationFrame(() => {
+        left.classList.add('visible');
+        right.classList.add('visible');
+      });
+    }, 200);
+  }
+
+  function openActivation() {
+    // 获取选中的游戏
+    const selected = document.querySelector('.game-select-card.selected');
+    if (selected) {
+      const gameName = selected.querySelector('.game-select-card-name').textContent;
+      document.querySelector('.nameplate-game').textContent = gameName;
+    }
+    resetAll();
+    document.getElementById('activationPage').classList.add('active');
+    updateBtns(4);
+  }
+
+  function updateBtns(activeIdx) {
+    document.querySelectorAll('.state-btn').forEach((btn, i) => {
+      btn.classList.toggle('active', i === activeIdx);
+    });
+  }
+
+  // KOL页面
+  function openKolPage() {
+    resetAll();
+    document.getElementById('kolPage').classList.add('active');
+    updateBtns(5);
+    kolCardIndex = 0;
+    switchKolCard(0, null);
+    startKolCarousel();
+  }
+
+  // KOL大卡轮播
+  let kolCardIndex = 0;
+  let kolCarouselTimer = null;
+  let kolCarouselPaused = false;
+
+  function switchKolCard(idx, tab) {
+    kolCardIndex = idx;
+    const kolPage = document.getElementById('kolPage');
+    const tabs = kolPage.querySelectorAll('.kol-carousel-tab');
+    tabs.forEach(t => t.classList.remove('active'));
+    if (tab) { tab.classList.add('active'); }
+    else { tabs[idx] && tabs[idx].classList.add('active'); }
+    kolPage.querySelectorAll('.kol-benefit-card').forEach((card, i) => {
+      card.classList.toggle('active', i === idx);
+    });
+  }
+
+  function startKolCarousel() {
+    stopKolCarousel();
+    kolCarouselTimer = setInterval(() => {
+      if (!kolCarouselPaused) {
+        kolCardIndex = (kolCardIndex + 1) % 3;
+        switchKolCard(kolCardIndex, null);
+      }
+    }, 2000);
+  }
+
+  function stopKolCarousel() {
+    if (kolCarouselTimer) { clearInterval(kolCarouselTimer); kolCarouselTimer = null; }
+  }
+
+  // hover暂停轮播 - KOL
+  (function() {
+    const right = document.querySelector('#kolPage .kol-right');
+    if (!right) return;
+    right.addEventListener('mouseenter', () => { kolCarouselPaused = true; });
+    right.addEventListener('mouseleave', () => { kolCarouselPaused = false; });
+  })();
+
+  // ===== 状态A：未被邀请页面 =====
+  function openUninvitedPage() {
+    resetAll();
+    document.getElementById('uninvitedPage').classList.add('active');
+    updateBtns(6);
+    uninvitedCardIndex = 0;
+    switchUninvitedCard(0, null);
+    startUninvitedCarousel();
+  }
+
+  let uninvitedCardIndex = 0;
+  let uninvitedCarouselTimer = null;
+  let uninvitedCarouselPaused = false;
+
+  function switchUninvitedCard(idx, tab) {
+    uninvitedCardIndex = idx;
+    const page = document.getElementById('uninvitedPage');
+    const tabs = page.querySelectorAll('.kol-carousel-tab');
+    tabs.forEach(t => t.classList.remove('active'));
+    if (tab) { tab.classList.add('active'); }
+    else { tabs[idx] && tabs[idx].classList.add('active'); }
+    page.querySelectorAll('.kol-benefit-card').forEach((card, i) => {
+      card.classList.toggle('active', i === idx);
+    });
+  }
+
+  function startUninvitedCarousel() {
+    stopUninvitedCarousel();
+    uninvitedCarouselTimer = setInterval(() => {
+      if (!uninvitedCarouselPaused) {
+        uninvitedCardIndex = (uninvitedCardIndex + 1) % 3;
+        switchUninvitedCard(uninvitedCardIndex, null);
+      }
+    }, 2000);
+  }
+
+  function stopUninvitedCarousel() {
+    if (uninvitedCarouselTimer) { clearInterval(uninvitedCarouselTimer); uninvitedCarouselTimer = null; }
+  }
+
+  // hover暂停轮播 - 未被邀请
+  (function() {
+    const right = document.querySelector('#uninvitedPage .kol-right');
+    if (!right) return;
+    right.addEventListener('mouseenter', () => { uninvitedCarouselPaused = true; });
+    right.addEventListener('mouseleave', () => { uninvitedCarouselPaused = false; });
+  })();
+
+  // KOL邀请仪式
+  function openKolInvite() {
+    const overlay = document.getElementById('kolInviteOverlay');
+    overlay.className = 'kol-invite-overlay active';
+
+    // 重置UID输入状态
+    document.getElementById('kolToBtn').style.display = '';
+    document.getElementById('kolToInput').style.display = 'none';
+    document.getElementById('kolToInput').value = '';
+
+    // 生成金色微尘
+    const dustContainer = document.getElementById('kolCeremonyDust');
+    dustContainer.innerHTML = '';
+    for (let i = 0; i < 35; i++) {
+      const p = document.createElement('div');
+      p.className = 'kol-dust-particle';
+      p.style.left = (10 + Math.random() * 80) + '%';
+      p.style.top = (20 + Math.random() * 60) + '%';
+      p.style.width = (1 + Math.random() * 2) + 'px';
+      p.style.height = p.style.width;
+      p.style.animation = `dustFloat ${4 + Math.random() * 5}s ease-in-out ${Math.random() * 3}s infinite`;
+      p.style.opacity = 0.15 + Math.random() * 0.2;
+      dustContainer.appendChild(p);
+    }
+
+    // 阶段1: 聚焦暗场
+    requestAnimationFrame(() => overlay.classList.add('phase-dim'));
+
+    // 阶段2: 折痕线出现
+    setTimeout(() => overlay.classList.add('phase-crease'), 300);
+
+    // 阶段3: 信纸从折痕展开
+    setTimeout(() => overlay.classList.add('phase-unfold'), 800);
+
+    // 阶段4: 文字内容逐行浮现
+    setTimeout(() => overlay.classList.add('phase-ink'), 1300);
+  }
+
+  function closeKolInvite() {
+    const overlay = document.getElementById('kolInviteOverlay');
+    overlay.className = 'kol-invite-overlay';
+  }
+
+  function activateUidInput() {
+    document.getElementById('kolToBtn').style.display = 'none';
+    const input = document.getElementById('kolToInput');
+    input.style.display = '';
+    input.focus();
+  }
+
+  function sendKolInvite() {
+    const input = document.getElementById('kolToInput');
+    if (!input || !input.value.trim()) {
+      activateUidInput();
+      return;
+    }
+
+    const uid = input.value.trim();
+    const overlay = document.getElementById('kolInviteOverlay');
+    const particleContainer = document.getElementById('kolSendParticles');
+
+    // 生成飘散粒子
+    particleContainer.innerHTML = '';
+    for (let i = 0; i < 60; i++) {
+      const p = document.createElement('div');
+      p.className = 'kol-send-particle';
+
+      // 粒子起始位置 — 随机分布在信件区域内
+      p.style.left = (10 + Math.random() * 80) + '%';
+      p.style.top = (5 + Math.random() * 90) + '%';
+
+      // 粒子大小
+      const size = 2 + Math.random() * 4;
+      p.style.width = size + 'px';
+      p.style.height = size + 'px';
+
+      // 飘散方向 — 向上为主，略有水平散开
+      const tx = (Math.random() - 0.5) * 300;
+      const ty = -(100 + Math.random() * 350);
+      p.style.setProperty('--tx', tx + 'px');
+      p.style.setProperty('--ty', ty + 'px');
+
+      // 动画时长和延迟
+      const duration = 1 + Math.random() * 1.2;
+      const delay = Math.random() * 0.5;
+      p.style.animation = `particleSend ${duration}s cubic-bezier(0.25, 0, 0.2, 1) ${delay}s forwards`;
+
+      particleContainer.appendChild(p);
+    }
+
+    // 信件消融
+    overlay.classList.add('phase-send');
+
+    // 确认文字
+    setTimeout(() => {
+      document.getElementById('kolSendConfirmUid').textContent = 'UID: ' + uid;
+      document.getElementById('kolSendConfirm').classList.add('visible');
+    }, 1200);
+
+    // 关闭
+    setTimeout(() => {
+      input.value = '';
+      document.getElementById('kolSendConfirm').classList.remove('visible');
+      closeKolInvite();
+    }, 3000);
+  }
+
+  // KOL邀请记录浮窗
+  function openKolHistory() {
+    document.getElementById('kolHistoryFloat').classList.add('active');
+  }
+  function closeKolHistory() {
+    document.getElementById('kolHistoryFloat').classList.remove('active');
+  }
+
+  // KOL联系技术专家（QR码入口）
+  function openKolQrCode() {
+    alert('[ 弹出专属技术专家微信二维码 ]');
+  }
+
+  // 点击其他区域关闭下拉菜单
+  document.addEventListener('click', (e) => {
+    if (!e.target.closest('.more-menu-wrap')) {
+      document.getElementById('moreDropdown').classList.remove('active');
+    }
+  });
+</script>
+</body>
+</html>
