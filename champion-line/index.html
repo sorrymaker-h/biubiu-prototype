@@ -1061,7 +1061,7 @@
     color: rgba(212,197,168,0.55);
     font-weight: 600; letter-spacing: 2px;
   }
-  /* 技术专家入口 — 铭牌内极淡文字 */
+  /* 网络管家入口 — 铭牌内极淡文字 */
   .kol-id-service {
     position: absolute; bottom: 14px; right: 18px;
     font-size: 10px; color: rgba(187,168,138,0.2);
@@ -1735,7 +1735,7 @@
   }
   .chain-desc {
     font-size: 11px;
-    color: rgba(255,255,255,0.2);
+    color: rgba(255,255,255,0.4);
     line-height: 1.6;
   }
   .chain-node.current .chain-desc {
@@ -1760,31 +1760,514 @@
     border: 1px solid rgba(255,255,255,0.06);
   }
 
+  /* 状态卡下方交互入口 */
+  .uninvited-actions {
+    margin: 16px 36px 0;
+    display: flex; flex-direction: column; align-items: stretch; gap: 10px;
+  }
+  .uninvited-action-main {
+    padding: 13px 0;
+    border-radius: 10px;
+    background: linear-gradient(135deg, rgba(212,197,168,0.1), rgba(187,168,138,0.05));
+    border: 1px solid rgba(187,168,138,0.18);
+    color: rgba(212,197,168,0.75);
+    font-size: 13px; font-weight: 700;
+    letter-spacing: 2px;
+    cursor: pointer; font-family: inherit;
+    transition: all 0.3s ease;
+    text-align: center;
+  }
+  .uninvited-action-main:hover {
+    background: linear-gradient(135deg, rgba(212,197,168,0.15), rgba(187,168,138,0.08));
+    border-color: rgba(187,168,138,0.3);
+    color: rgba(212,197,168,0.9);
+  }
+  .uninvited-action-sub {
+    font-size: 11px;
+    color: rgba(255,255,255,0.2);
+    cursor: pointer;
+    transition: color 0.2s;
+    text-align: center;
+  }
+  .uninvited-action-sub:hover {
+    color: rgba(212,197,168,0.5);
+  }
+
+  /* 通用弹窗 */
+  .uninvited-modal {
+    position: absolute; inset: 0;
+    z-index: 300;
+    background: rgba(0,0,0,0.7);
+    display: none; align-items: center; justify-content: center;
+    animation: ceremonyFadeIn 0.3s ease;
+  }
+  .uninvited-modal.active { display: flex; }
+  .uninvited-modal-box {
+    width: 520px;
+    max-height: 70vh;
+    overflow-y: auto;
+    background: linear-gradient(160deg, #1e1a16, #141210);
+    border: 1px solid rgba(187,168,138,0.12);
+    border-radius: 16px;
+    padding: 36px 32px;
+    position: relative;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(187,168,138,0.15) transparent;
+  }
+  .uninvited-modal-box::-webkit-scrollbar {
+    width: 4px;
+  }
+  .uninvited-modal-box::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  .uninvited-modal-box::-webkit-scrollbar-thumb {
+    background: rgba(187,168,138,0.15);
+    border-radius: 4px;
+  }
+  .uninvited-modal-box::-webkit-scrollbar-thumb:hover {
+    background: rgba(187,168,138,0.25);
+  }
+  .uninvited-modal-close {
+    position: absolute; top: 16px; right: 18px;
+    background: none; border: none;
+    color: rgba(255,255,255,0.2); font-size: 16px;
+    cursor: pointer; font-family: inherit;
+  }
+  .uninvited-modal-close:hover { color: rgba(255,255,255,0.5); }
+  .uninvited-modal-title {
+    font-size: 18px; font-weight: 800;
+    color: rgba(212,197,168,0.85);
+    margin-bottom: 8px;
+    letter-spacing: 1px;
+  }
+  .uninvited-modal-subtitle {
+    font-size: 12px; color: rgba(255,255,255,0.25);
+    margin-bottom: 24px;
+    line-height: 1.6;
+  }
+  .uninvited-modal-section {
+    margin-bottom: 20px;
+  }
+  .uninvited-modal-section-title {
+    font-size: 12px; font-weight: 700;
+    color: rgba(212,197,168,0.6);
+    margin-bottom: 8px;
+    letter-spacing: 1px;
+  }
+  .uninvited-modal-text {
+    font-size: 12px; color: rgba(255,255,255,0.35);
+    line-height: 1.8;
+  }
+
+  /* 邀请者名单卡片 */
+  /* ===== 获邀详情全屏页 ===== */
+  .invite-event-page {
+    position: absolute; inset: 0;
+    z-index: 500;
+    background: rgba(10,8,6,0.97);
+    display: none;
+    flex-direction: column;
+    animation: ceremonyFadeIn 0.3s ease;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(187,168,138,0.15) transparent;
+  }
+  .invite-event-page::-webkit-scrollbar { width: 4px; }
+  .invite-event-page::-webkit-scrollbar-track { background: transparent; }
+  .invite-event-page::-webkit-scrollbar-thumb { background: rgba(187,168,138,0.15); border-radius: 4px; }
+  .invite-event-page.active { display: flex; }
+
+  .invite-event-header {
+    padding: 40px 48px 0;
+    flex-shrink: 0;
+    display: flex; align-items: flex-start; justify-content: space-between;
+  }
+  .invite-event-close {
+    background: none; border: none;
+    color: rgba(255,255,255,0.2); font-size: 18px;
+    cursor: pointer; font-family: inherit;
+    padding: 4px 8px;
+    transition: color 0.2s;
+  }
+  .invite-event-close:hover { color: rgba(255,255,255,0.5); }
+
+  .invite-event-title {
+    font-size: 22px; font-weight: 900;
+    color: rgba(212,197,168,0.9);
+    letter-spacing: 1px;
+    margin-bottom: 8px;
+  }
+  .invite-event-subtitle {
+    font-size: 12px; color: rgba(255,255,255,0.25);
+    line-height: 1.6;
+  }
+
+  /* 主推选手大卡 */
+  .invite-hero-section {
+    padding: 32px 48px;
+    display: flex; gap: 20px;
+    flex-shrink: 0;
+  }
+  .invite-hero-card {
+    flex: 1;
+    border-radius: 16px;
+    background: linear-gradient(160deg, rgba(42,37,32,0.35), rgba(18,15,12,0.2));
+    border: 1px solid rgba(187,168,138,0.1);
+    overflow: hidden;
+    cursor: pointer;
+    transition: border-color 0.3s, transform 0.3s;
+  }
+  .invite-hero-card:hover {
+    border-color: rgba(187,168,138,0.25);
+    transform: translateY(-2px);
+  }
+  .invite-hero-visual {
+    height: 200px;
+    background: linear-gradient(180deg, rgba(187,168,138,0.04), rgba(0,0,0,0.2));
+    display: flex; align-items: center; justify-content: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .invite-hero-silhouette {
+    font-size: 80px; font-weight: 900;
+    color: rgba(187,168,138,0.06);
+    letter-spacing: 8px;
+    position: absolute;
+  }
+  .invite-hero-badge {
+    position: absolute; top: 16px; right: 16px;
+    font-size: 10px; font-weight: 700;
+    color: rgba(212,197,168,0.5);
+    background: rgba(187,168,138,0.08);
+    padding: 4px 10px;
+    border-radius: 4px;
+    letter-spacing: 1px;
+  }
+  .invite-hero-live-tag {
+    position: absolute; top: 16px; left: 16px;
+    font-size: 10px; font-weight: 700;
+    color: #e74c3c;
+    background: rgba(231,76,60,0.1);
+    padding: 4px 10px;
+    border-radius: 4px;
+    display: flex; align-items: center; gap: 5px;
+  }
+  .invite-hero-live-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: #e74c3c;
+    animation: livePulse 1.5s ease-in-out infinite;
+  }
+  @keyframes livePulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.3; }
+  }
+  .invite-hero-body {
+    padding: 24px;
+  }
+  .invite-hero-name {
+    font-size: 20px; font-weight: 900;
+    color: rgba(255,255,255,0.8);
+    margin-bottom: 4px;
+    display: flex; align-items: baseline; gap: 8px;
+  }
+  .invite-hero-seat {
+    font-size: 12px; font-weight: 400;
+    color: rgba(212,197,168,0.4);
+  }
+  .invite-hero-meta {
+    font-size: 11px; color: rgba(255,255,255,0.2);
+    margin-bottom: 14px;
+  }
+  .invite-hero-desc {
+    font-size: 12px; color: rgba(255,255,255,0.4);
+    line-height: 1.8;
+    margin-bottom: 16px;
+  }
+  .invite-hero-action {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-size: 11px; font-weight: 700;
+    color: rgba(212,197,168,0.6);
+    cursor: pointer;
+    transition: color 0.2s;
+  }
+  .invite-hero-action:hover { color: rgba(212,197,168,0.9); }
+
+  /* 更多席位拥有者 */
+  .invite-more-section {
+    padding: 0 48px 40px;
+    flex-shrink: 0;
+  }
+  .invite-more-header {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 20px;
+  }
+  .invite-more-title {
+    font-size: 14px; font-weight: 800;
+    color: rgba(212,197,168,0.6);
+    letter-spacing: 0.5px;
+  }
+  .invite-platform-tabs {
+    display: flex; gap: 6px;
+  }
+  .invite-platform-tab {
+    padding: 4px 14px;
+    border-radius: 5px;
+    border: 1px solid rgba(255,255,255,0.06);
+    background: rgba(255,255,255,0.02);
+    color: rgba(255,255,255,0.25);
+    font-size: 11px; font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-family: inherit;
+  }
+  .invite-platform-tab.active {
+    background: rgba(187,168,138,0.08);
+    border-color: rgba(187,168,138,0.2);
+    color: rgba(212,197,168,0.7);
+  }
+  .invite-more-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+  }
+  .invite-mini-card {
+    padding: 18px 16px;
+    border-radius: 12px;
+    background: rgba(255,255,255,0.02);
+    border: 1px solid rgba(187,168,138,0.06);
+    cursor: pointer;
+    transition: border-color 0.2s;
+    position: relative;
+  }
+  .invite-mini-card:hover {
+    border-color: rgba(187,168,138,0.25);
+    background: rgba(187,168,138,0.04);
+  }
+  .invite-mini-arrow {
+    position: absolute;
+    bottom: 14px; right: 16px;
+    font-size: 18px;
+    color: rgba(212,197,168,0.35);
+    transition: color 0.2s, transform 0.2s;
+  }
+  .invite-mini-card:hover .invite-mini-arrow {
+    color: rgba(212,197,168,0.8);
+    transform: translateX(4px);
+  }
+  .invite-mini-top {
+    display: flex; align-items: center; gap: 10px;
+    margin-bottom: 10px;
+  }
+  .invite-mini-avatar {
+    width: 32px; height: 32px; border-radius: 50%;
+    background: linear-gradient(135deg, rgba(187,168,138,0.12), rgba(187,168,138,0.04));
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 700;
+    color: rgba(212,197,168,0.5);
+    flex-shrink: 0;
+  }
+  .invite-mini-name {
+    font-size: 13px; font-weight: 700;
+    color: rgba(255,255,255,0.6);
+  }
+  .invite-mini-seat {
+    font-size: 10px; font-weight: 400;
+    color: rgba(212,197,168,0.3);
+    margin-left: 4px;
+  }
+  .invite-mini-meta {
+    font-size: 10px; color: rgba(255,255,255,0.18);
+  }
+  .invite-mini-desc {
+    font-size: 11px; color: rgba(255,255,255,0.3);
+    line-height: 1.7;
+  }
+
+  /* 旧样式保留兼容 */
+  .inviter-card {
+    padding: 16px;
+    border-radius: 10px;
+    background: rgba(255,255,255,0.02);
+    border: 1px solid rgba(187,168,138,0.06);
+    margin-bottom: 10px;
+    transition: border-color 0.2s;
+  }
+  .inviter-card:hover {
+    border-color: rgba(187,168,138,0.15);
+  }
+  .inviter-card-top {
+    display: flex; align-items: center; gap: 12px;
+    margin-bottom: 8px;
+  }
+  .inviter-avatar {
+    width: 36px; height: 36px; border-radius: 50%;
+    background: linear-gradient(135deg, rgba(187,168,138,0.12), rgba(187,168,138,0.04));
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px; font-weight: 700;
+    color: rgba(212,197,168,0.5);
+    flex-shrink: 0;
+  }
+  .inviter-info { flex: 1; }
+  .inviter-name {
+    font-size: 14px; font-weight: 700;
+    color: rgba(255,255,255,0.65);
+    margin-bottom: 2px;
+  }
+  .inviter-meta {
+    font-size: 10px; color: rgba(255,255,255,0.2);
+  }
+  .inviter-method {
+    font-size: 11px; color: rgba(212,197,168,0.4);
+    line-height: 1.6;
+    padding-left: 48px;
+  }
+
   /* 用户当前状态提示 */
   .uninvited-status {
     margin: 20px 36px 0;
-    padding: 20px 24px;
+    padding: 22px 24px;
     border-radius: 12px;
-    background: rgba(255,255,255,0.02);
-    border: 1px solid rgba(255,255,255,0.05);
+    background: linear-gradient(160deg, rgba(42,37,32,0.35), rgba(18,15,12,0.2));
+    border: 1px solid rgba(187,168,138,0.12);
     text-align: center;
   }
   .uninvited-status-label {
     font-size: 9px; letter-spacing: 2px;
-    color: rgba(255,255,255,0.2);
+    color: rgba(212,197,168,0.45);
     font-weight: 600;
     margin-bottom: 8px;
   }
   .uninvited-status-text {
-    font-size: 16px; font-weight: 800;
-    color: rgba(255,255,255,0.35);
+    font-size: 17px; font-weight: 800;
+    color: rgba(212,197,168,0.7);
     margin-bottom: 6px;
-    letter-spacing: 1px;
+    letter-spacing: 2px;
   }
   .uninvited-status-desc {
     font-size: 11px;
-    color: rgba(255,255,255,0.15);
+    color: rgba(255,255,255,0.3);
     line-height: 1.5;
+  }
+  .uninvited-status-link {
+    cursor: pointer;
+    transition: color 0.2s;
+  }
+  .uninvited-status-link:hover {
+    color: rgba(212,197,168,0.5);
+  }
+
+  /* ===== 已被邀请状态 ===== */
+  .invited-page {
+    position: absolute; inset: 0;
+    z-index: 200;
+    background: rgba(12,10,8,0.95);
+    display: none;
+    animation: ceremonyFadeIn 0.4s ease;
+  }
+  .invited-page.active { display: flex; }
+
+  .invited-notice {
+    margin: 0 36px;
+    padding: 28px 24px;
+    flex-shrink: 0;
+    border-radius: 16px;
+    background: linear-gradient(160deg, rgba(42,37,32,0.4), rgba(18,15,12,0.2));
+    border: 1px solid rgba(187,168,138,0.15);
+  }
+  .invited-notice-tag {
+    font-size: 9px; font-weight: 700;
+    letter-spacing: 2px;
+    color: rgba(212,197,168,0.9);
+    background: rgba(187,168,138,0.1);
+    padding: 3px 10px;
+    border-radius: 4px;
+    display: inline-block;
+    margin-bottom: 16px;
+  }
+  .invited-notice-title {
+    font-size: 17px; font-weight: 900;
+    color: rgba(255,255,255,0.85);
+    margin-bottom: 16px;
+    line-height: 1.5;
+  }
+  .invited-inviter {
+    display: flex; align-items: center; gap: 12px;
+    padding: 14px 16px;
+    border-radius: 10px;
+    background: rgba(187,168,138,0.04);
+    border: 1px solid rgba(187,168,138,0.08);
+  }
+  .invited-inviter-avatar {
+    width: 40px; height: 40px; border-radius: 50%;
+    background: linear-gradient(135deg, rgba(187,168,138,0.15), rgba(187,168,138,0.05));
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px; font-weight: 800;
+    color: rgba(212,197,168,0.6);
+    flex-shrink: 0;
+  }
+  .invited-inviter-name {
+    font-size: 14px; font-weight: 700;
+    color: rgba(255,255,255,0.7);
+    margin-bottom: 2px;
+  }
+  .invited-inviter-seat {
+    font-size: 11px; font-weight: 400;
+    color: rgba(212,197,168,0.4);
+    margin-left: 6px;
+  }
+  .invited-inviter-meta {
+    font-size: 10px; color: rgba(255,255,255,0.25);
+  }
+
+  .invited-status {
+    margin: 20px 36px 0;
+    padding: 22px 24px;
+    border-radius: 12px;
+    background: linear-gradient(160deg, rgba(42,37,32,0.35), rgba(18,15,12,0.2));
+    border: 1px solid rgba(187,168,138,0.12);
+    text-align: center;
+  }
+  .invited-status-label {
+    font-size: 9px; letter-spacing: 2px;
+    color: rgba(212,197,168,0.45);
+    font-weight: 600;
+    margin-bottom: 8px;
+  }
+  .invited-status-text {
+    font-size: 17px; font-weight: 800;
+    color: rgba(212,197,168,0.85);
+    margin-bottom: 6px;
+    letter-spacing: 2px;
+  }
+  .invited-status-desc {
+    font-size: 11px;
+    color: rgba(255,255,255,0.3);
+    line-height: 1.5;
+  }
+
+  .invited-actions {
+    margin: 16px 36px 0;
+    flex-shrink: 0;
+  }
+  .invited-action-main {
+    width: 100%;
+    padding: 14px;
+    border-radius: 10px;
+    border: none;
+    background: linear-gradient(135deg, rgba(187,168,138,0.25), rgba(187,168,138,0.12));
+    color: rgba(212,197,168,0.95);
+    font-size: 14px; font-weight: 700;
+    cursor: pointer;
+    font-family: inherit;
+    letter-spacing: 1px;
+    transition: background 0.2s, transform 0.1s;
+  }
+  .invited-action-main:hover {
+    background: linear-gradient(135deg, rgba(187,168,138,0.35), rgba(187,168,138,0.18));
+  }
+  .invited-action-main:active {
+    transform: scale(0.98);
   }
 
   /* ===== 底部战队背书条 ===== */
@@ -1832,6 +2315,8 @@
     <button class="state-btn" onclick="openActivation()">激活成功</button>
     <button class="state-btn" onclick="openKolPage()" style="background:rgba(212,197,168,0.08);border-color:rgba(212,197,168,0.2)">邀请者(KOL)</button>
     <button class="state-btn" onclick="openUninvitedPage()" style="background:rgba(212,197,168,0.08);border-color:rgba(212,197,168,0.2)">未被邀请</button>
+    <button class="state-btn" onclick="openInvitedPage()" style="background:rgba(212,197,168,0.08);border-color:rgba(212,197,168,0.2)">已被邀请</button>
+    <button class="state-btn" onclick="openMemberPage()" style="background:rgba(212,197,168,0.08);border-color:rgba(212,197,168,0.2)">已开通(无邀请)</button>
   </div>
 
   <!-- 客户端窗口 -->
@@ -2051,13 +2536,13 @@
             <div class="invite-from-section">
               <div class="invite-from-label">来自</div>
               <div class="invite-from-name">XDD · 左梓轩</div>
-              <div class="invite-from-title">PUBG 职业选手 · BiuBiu冠军专线成员</div>
+              <div class="invite-from-title">PUBG 职业选手 · biubiu冠军专线成员</div>
               <div class="invite-from-signature">ZuoZixuan</div>
             </div>
             <div class="invite-divider"></div>
             <div class="invite-message">
               邀请你加入<em>冠军专线</em><br>
-              与冠军共享同一套专属服务标准
+              从这一刻起，你的赛场由冠军标准守护
             </div>
             <div class="invite-seat-info">
               <div class="invite-seat-label">你的席位编号</div>
@@ -2139,31 +2624,29 @@
 
           <!-- 邀请链路示意 -->
           <div class="invite-chain">
-            <div class="invite-chain-title">邀 请 制 · 入 席 链 路</div>
+            <div class="invite-chain-title">席位邀请制</div>
 
-            <!-- 节点1：首批席位 -->
+            <!-- 节点1：直邀席位 -->
             <div class="chain-node completed">
               <div class="chain-dot-col">
                 <div class="chain-dot"></div>
                 <div class="chain-line"></div>
               </div>
               <div class="chain-content">
-                <div class="chain-label">首批席位开放</div>
-                <div class="chain-desc">面向职业选手与合作主播开放，在真实赛训中深度验证与调优。</div>
-                <div class="chain-status-tag">已完成</div>
+                <div class="chain-label">biubiu直邀席位</div>
+                <div class="chain-desc">职业选手与合作主播，在真实赛训中深度体验与调优。</div>
               </div>
             </div>
 
-            <!-- 节点2：第二批席位 -->
+            <!-- 节点2：持有者邀请席位 -->
             <div class="chain-node completed">
               <div class="chain-dot-col">
                 <div class="chain-dot"></div>
                 <div class="chain-line"></div>
               </div>
               <div class="chain-content">
-                <div class="chain-label">第二批席位邀请</div>
-                <div class="chain-desc">由首批席位拥有者，向他们认可的玩家发出邀请。</div>
-                <div class="chain-status-tag">进行中</div>
+                <div class="chain-label">席位持有者邀请</div>
+                <div class="chain-desc">由直邀席位拥有者，向更多玩家发出加入冠军专线的邀请。</div>
               </div>
             </div>
 
@@ -2173,36 +2656,41 @@
           <div class="uninvited-status">
             <div class="uninvited-status-label">你的席位状态</div>
             <div class="uninvited-status-text">等待邀请</div>
-            <div class="uninvited-status-desc">冠军专线仅通过邀请开放，无法直接购买。</div>
+            <div class="uninvited-status-desc uninvited-status-link" onclick="openWhyLimited()">冠军专线席位暂时仅支持受邀加入 <span style="font-size:14px;margin-left:2px">›</span></div>
+          </div>
+
+          <!-- 交互入口 -->
+          <div class="uninvited-actions">
+            <button class="uninvited-action-main" onclick="openInviterList()">了解获邀方式</button>
           </div>
         </div>
 
         <!-- 右侧：权益展示（复用KOL右侧结构） -->
         <div class="kol-right">
           <div class="kol-carousel-nav">
-            <button class="kol-carousel-tab active" onclick="switchUninvitedCard(0, this)">巅峰配置</button>
-            <button class="kol-carousel-tab" onclick="switchUninvitedCard(1, this)">专属冠冕</button>
-            <button class="kol-carousel-tab" onclick="switchUninvitedCard(2, this)">尊享护航</button>
+            <button class="kol-carousel-tab active" onclick="switchUninvitedCard(0, this)">畅享巅峰手感</button>
+            <button class="kol-carousel-tab" onclick="switchUninvitedCard(1, this)">彰显冠军身份</button>
+            <button class="kol-carousel-tab" onclick="switchUninvitedCard(2, this)">尊享专家护航</button>
           </div>
           <div class="kol-card-area">
             <!-- 卡1: 技术特权 -->
             <div class="kol-benefit-card active">
               <div class="kol-card-top">
-                <div class="kol-card-title">冠军操作，不该受限</div>
-                <div class="kol-card-sub">决胜往往只在一瞬之间，我们要守住的，就是不让任何延迟与波动，碰到你那次足以改写比赛走向的关键出手。</div>
+                <div class="kol-card-title">冠军同款加速方案</div>
+                <div class="kol-card-sub">完全独享的加速节点资源，专门针对你的网络环境搭建。让每一次走位和出手，都如你所想。</div>
               </div>
               <div class="kol-card-benefits">
                 <div class="kol-mini-card">
-                  <div class="kol-mini-title">独享冠军加速节点</div>
-                  <div class="kol-mini-desc">关键时刻，快的不只是网络，更是你的出手。</div>
+                  <div class="kol-mini-title">网络不再是变量</div>
+                  <div class="kol-mini-desc">当稳定成为常态，胜负只关乎操作本身</div>
                 </div>
                 <div class="kol-mini-card">
-                  <div class="kol-mini-title">专属的带宽资源</div>
-                  <div class="kol-mini-desc">高峰时段依然从容，你的通道始终被优先保障。</div>
+                  <div class="kol-mini-title">操作反馈干脆利落</div>
+                  <div class="kol-mini-desc">当延迟低到无感，你和角色之间再无距离</div>
                 </div>
                 <div class="kol-mini-card">
-                  <div class="kol-mini-title">游戏场景智能适配</div>
-                  <div class="kol-mini-desc">比赛节奏会变，加速策略也该跟着变。</div>
+                  <div class="kol-mini-title">对你而言没有高峰期</div>
+                  <div class="kol-mini-desc">当独享成为前提，你的游戏时间不再需要挑选</div>
                 </div>
               </div>
               <div class="kol-card-visual">[ 冠军网络架构示意 — 交付UI ]</div>
@@ -2210,21 +2698,21 @@
             <!-- 卡2: 身份特权 -->
             <div class="kol-benefit-card">
               <div class="kol-card-top">
-                <div class="kol-card-title">冠军登场，不该普通</div>
-                <div class="kol-card-sub">从你出现的那一刻起，冠军该有的分量、排面与尊贵，就该先一步被看见。</div>
+                <div class="kol-card-title">冠军专属视觉体验</div>
+                <div class="kol-card-sub">从客户端图标到加速动效，每一处视觉细节都为冠军定制。打开biubiu，这里就是你的主场。</div>
               </div>
               <div class="kol-card-benefits">
                 <div class="kol-mini-card">
-                  <div class="kol-mini-title">冠军专属客户端主题</div>
-                  <div class="kol-mini-desc">打开客户端的那一刻，就知道这是你的主场。</div>
+                  <div class="kol-mini-title">无声的身份宣言</div>
+                  <div class="kol-mini-desc">席位编号、专属铭牌，每一处都在替你表达</div>
                 </div>
                 <div class="kol-mini-card">
-                  <div class="kol-mini-title">独一无二的席位编号</div>
-                  <div class="kol-mini-desc">专属编号在身，独特身份一眼可见。</div>
+                  <div class="kol-mini-title">每一帧动效都有讲究</div>
+                  <div class="kol-mini-desc">从启动到加速，每一步交互都成为冠军的独家体验</div>
                 </div>
                 <div class="kol-mini-card">
-                  <div class="kol-mini-title">游戏定制的冠军动效</div>
-                  <div class="kol-mini-desc">每一次亮相，都该配得上冠军应有的光芒。</div>
+                  <div class="kol-mini-title">置身你的专属主场</div>
+                  <div class="kol-mini-desc">整个客户端覆盖冠军主题，每一个界面都是主场氛围</div>
                 </div>
               </div>
               <div class="kol-card-visual">[ 冠军铭牌 & 游戏内标识 — 交付UI ]</div>
@@ -2232,21 +2720,21 @@
             <!-- 卡3: 服务特权 -->
             <div class="kol-benefit-card">
               <div class="kol-card-top">
-                <div class="kol-card-title">冠军待遇，不该缺席</div>
-                <div class="kol-card-sub">你不是一个人在战斗。从问题出现时的即时响应，到对局结束后的复盘分析，都有人在你身后。</div>
+                <div class="kol-card-title">1V1专属网络管家</div>
+                <div class="kol-card-sub">只为你一人服务的专属网络管家，问题出现即时响应。你的每一场比赛，都有专业后盾。</div>
               </div>
               <div class="kol-card-benefits">
                 <div class="kol-mini-card">
-                  <div class="kol-mini-title">专属1V1技术专家</div>
-                  <div class="kol-mini-desc">遇到问题，永远有人第一时间为你解决。</div>
+                  <div class="kol-mini-title">网络问题，专家接手</div>
+                  <div class="kol-mini-desc">问题交给专家处理，你只需要专注比赛</div>
                 </div>
                 <div class="kol-mini-card">
-                  <div class="kol-mini-title">冠军席位服务群</div>
-                  <div class="kol-mini-desc">专属群内即时响应，让重视感从不缺席。</div>
+                  <div class="kol-mini-title">因为了解，所以精准</div>
+                  <div class="kol-mini-desc">熟悉你的网络环境，优化方案自然精准命中</div>
                 </div>
                 <div class="kol-mini-card">
-                  <div class="kol-mini-title">专属赛后网络战报</div>
-                  <div class="kol-mini-desc">不放过每一次波动，只为每一局都精益求精。</div>
+                  <div class="kol-mini-title">下一局，永远比这一局更好</div>
+                  <div class="kol-mini-desc">赛后自动分析网络表现，下一局的体验已经在优化的路上</div>
                 </div>
               </div>
               <div class="kol-card-visual">[ 专属服务通道示意 — 交付UI ]</div>
@@ -2267,6 +2755,376 @@
             <div class="kol-team-logo">+11</div>
           </div>
         </div>
+
+        <!-- 弹窗：为什么限量 -->
+        <div class="uninvited-modal" id="whyLimitedModal">
+          <div class="uninvited-modal-box" style="max-width: 560px;">
+            <button class="uninvited-modal-close" onclick="closeWhyLimited()">✕</button>
+            <div class="uninvited-modal-title">为什么是邀请制？</div>
+            <div style="font-size:12px;color:rgba(255,255,255,0.38);line-height:2.2;margin-bottom:28px;">
+              我们知道，愿意选择冠军专线，本身就是一种信任。<br>
+              也正因为这份信任，我们不想用"无限开放"的方式稀释体验。<br>
+              冠军专线的每一个席位，背后都对应着专属的节点资源，和一位只服务于你的1V1网络管家。<br>
+              我们希望每一位加入的玩家，都能真正感受到稳定、顺畅、被认真对待的冠军体验。<br>
+              所以席位的开放会比较克制，目前通过邀请制逐步开放。
+            </div>
+
+            <!-- 关于未来 -->
+            <div style="border-top:1px solid rgba(187,168,138,0.06);padding-top:20px;">
+              <div style="font-size:12px;font-weight:700;color:rgba(212,197,168,0.5);margin-bottom:8px;letter-spacing:0.5px;">关于未来</div>
+              <div style="font-size:11px;color:rgba(255,255,255,0.25);line-height:1.8;">我们会持续扩充资源与服务团队，稳步开放新的席位。每一次开放，前提都是确认能对得起每一份信任。未来也许会有更多加入的方式，但体验的标准只会往上走。</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 获邀详情全屏页 -->
+        <div class="invite-event-page" id="inviterListModal">
+
+          <!-- 顶部标题栏 -->
+          <div class="invite-event-header">
+            <div>
+              <div class="invite-event-title">加入冠军行列</div>
+              <div class="invite-event-subtitle">以下席位拥有者具备邀请资格，关注他们的动态获取入席机会</div>
+            </div>
+            <button class="invite-event-close" onclick="closeInviterList()">✕</button>
+          </div>
+
+          <!-- 主推选手 -->
+          <div class="invite-hero-section">
+
+            <!-- XDD -->
+            <div class="invite-hero-card">
+              <div class="invite-hero-visual">
+                <div class="invite-hero-silhouette">XDD</div>
+                <div class="invite-hero-badge">#001</div>
+                <div class="invite-hero-live-tag">
+                  <div class="invite-hero-live-dot"></div>
+                  直播中
+                </div>
+              </div>
+              <div class="invite-hero-body">
+                <div class="invite-hero-name">XDD <span class="invite-hero-seat">席位 #001</span></div>
+                <div class="invite-hero-meta">绝地求生 · PUBG 职业选手 · 冠军专线首批直邀</div>
+                <div class="invite-hero-desc">直播间弹幕互动参与抽选，发送你的 biubiu UID 即可参与。XDD 会在每周五晚直播中开启冠军专线席位抽选环节。</div>
+                <div class="invite-hero-action">前往直播间 <span style="font-size:14px">›</span></div>
+              </div>
+            </div>
+
+            <!-- 小孩 -->
+            <div class="invite-hero-card">
+              <div class="invite-hero-visual">
+                <div class="invite-hero-silhouette">小孩</div>
+                <div class="invite-hero-badge">#002</div>
+                <div class="invite-hero-live-tag" style="opacity:0;pointer-events:none;">
+                  <div class="invite-hero-live-dot"></div>
+                  直播中
+                </div>
+              </div>
+              <div class="invite-hero-body">
+                <div class="invite-hero-name">小孩 <span class="invite-hero-seat">席位 #002</span></div>
+                <div class="invite-hero-meta">街头霸王6 · 格斗冠军 · 冠军专线首批直邀</div>
+                <div class="invite-hero-desc">直播间粉丝福利场定期开放邀请名额，关注直播预告获取活动时间。小孩会在福利场中随机抽取幸运观众赠予席位邀请。</div>
+                <div class="invite-hero-action">前往直播间 <span style="font-size:14px">›</span></div>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- 更多席位拥有者 -->
+          <div class="invite-more-section">
+            <div class="invite-more-header">
+              <div class="invite-more-title">更多席位拥有者</div>
+              <div class="invite-platform-tabs">
+                <button class="invite-platform-tab active" onclick="switchInvitePlatform(this)">全部</button>
+                <button class="invite-platform-tab" onclick="switchInvitePlatform(this)">B站</button>
+                <button class="invite-platform-tab" onclick="switchInvitePlatform(this)">抖音</button>
+                <button class="invite-platform-tab" onclick="switchInvitePlatform(this)">微博</button>
+              </div>
+            </div>
+
+            <div class="invite-more-grid">
+              <!-- Uzi -->
+              <div class="invite-mini-card">
+                <div class="invite-mini-top">
+                  <div class="invite-mini-avatar">U</div>
+                  <div>
+                    <div class="invite-mini-name">Uzi <span class="invite-mini-seat">#003</span></div>
+                    <div class="invite-mini-meta">英雄联盟 · 退役职业选手</div>
+                  </div>
+                </div>
+                <div class="invite-mini-desc">社交媒体不定期发放，关注微博和抖音动态获取邀请机会</div>
+                <div class="invite-mini-arrow">›</div>
+              </div>
+
+              <!-- PDD -->
+              <div class="invite-mini-card">
+                <div class="invite-mini-top">
+                  <div class="invite-mini-avatar">P</div>
+                  <div>
+                    <div class="invite-mini-name">PDD <span class="invite-mini-seat">#004</span></div>
+                    <div class="invite-mini-meta">英雄联盟 · 知名主播</div>
+                  </div>
+                </div>
+                <div class="invite-mini-desc">直播间专属活动，具体时间以直播预告为准</div>
+                <div class="invite-mini-arrow">›</div>
+              </div>
+
+              <!-- 占位：更多 -->
+              <div class="invite-mini-card" style="border-style:dashed;display:flex;align-items:center;justify-content:center;">
+                <div style="text-align:center;">
+                  <div style="font-size:20px;color:rgba(212,197,168,0.15);margin-bottom:6px;">+</div>
+                  <div style="font-size:11px;color:rgba(255,255,255,0.15);">持续更新中</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+
+      <!-- ===== 已被邀请（未确认）页面 ===== -->
+      <div class="invited-page" id="invitedPage">
+
+        <!-- 左侧：品牌+邀请通知 -->
+        <div class="kol-left">
+          <div class="kol-brand-area">
+            <div class="kol-brand-tag">冠军专线</div>
+            <div class="kol-title">冠军之选<br>为赢而生</div>
+            <div class="kol-subtitle">认真对待每一局的人，值得冠军级的网络体验</div>
+          </div>
+
+          <!-- 邀请通知 -->
+          <div class="invited-notice" style="text-align:center;">
+            <div class="invited-notice-tag">收到邀请</div>
+
+            <!-- 邀请者头像+角标编号 -->
+            <div style="position:relative;width:56px;height:56px;margin:24px auto 16px;">
+              <div style="width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg,rgba(187,168,138,0.2),rgba(187,168,138,0.06));display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:900;color:rgba(212,197,168,0.7);border:1px solid rgba(187,168,138,0.15);">X</div>
+              <div style="position:absolute;bottom:-2px;right:-8px;font-size:9px;color:rgba(212,197,168,0.6);background:rgba(187,168,138,0.1);border:1px solid rgba(187,168,138,0.2);border-radius:4px;padding:1px 5px;font-weight:600;letter-spacing:0.5px;">#001</div>
+            </div>
+            <div style="font-size:18px;font-weight:900;color:rgba(255,255,255,0.85);margin-bottom:4px;">XDD</div>
+            <div style="font-size:11px;color:rgba(255,255,255,0.25);margin-bottom:28px;">绝地求生 · PUBG 职业选手</div>
+
+            <!-- 邀请语 -->
+            <div style="font-size:13px;color:rgba(212,197,168,0.7);line-height:1.7;margin-bottom:28px;">邀请你加入冠军行列</div>
+
+            <!-- CTA -->
+            <button class="invited-action-main" onclick="openCeremonyFromInvited()">确认入席</button>
+
+            <!-- 补充说明移至按钮下方 -->
+            <div style="font-size:10px;color:rgba(255,255,255,0.15);margin-top:14px;">确认后将为你分配专属席位编号</div>
+          </div>
+        </div>
+
+        <!-- 右侧：权益展示（复用） -->
+        <div class="kol-right">
+          <div class="kol-carousel-nav">
+            <button class="kol-carousel-tab active" onclick="switchInvitedCard(0, this)">畅享巅峰手感</button>
+            <button class="kol-carousel-tab" onclick="switchInvitedCard(1, this)">彰显冠军身份</button>
+            <button class="kol-carousel-tab" onclick="switchInvitedCard(2, this)">尊享专家护航</button>
+          </div>
+          <div class="kol-card-area">
+            <!-- 卡1: 技术特权 -->
+            <div class="kol-benefit-card active">
+              <div class="kol-card-top">
+                <div class="kol-card-title">冠军同款加速方案</div>
+                <div class="kol-card-sub">完全独享的加速节点资源，专门针对你的网络环境搭建。让每一次走位和出手，都如你所想。</div>
+              </div>
+              <div class="kol-card-benefits">
+                <div class="kol-mini-card">
+                  <div class="kol-mini-title">网络不再是变量</div>
+                  <div class="kol-mini-desc">当稳定成为常态，胜负只关乎操作本身</div>
+                </div>
+                <div class="kol-mini-card">
+                  <div class="kol-mini-title">操作反馈干脆利落</div>
+                  <div class="kol-mini-desc">当延迟低到无感，你和角色之间再无距离</div>
+                </div>
+                <div class="kol-mini-card">
+                  <div class="kol-mini-title">对你而言没有高峰期</div>
+                  <div class="kol-mini-desc">当独享成为前提，你的游戏时间不再需要挑选</div>
+                </div>
+              </div>
+              <div class="kol-card-visual">[ 冠军网络架构示意 — 交付UI ]</div>
+            </div>
+            <!-- 卡2: 身份特权 -->
+            <div class="kol-benefit-card">
+              <div class="kol-card-top">
+                <div class="kol-card-title">冠军专属视觉体验</div>
+                <div class="kol-card-sub">从客户端图标到加速动效，每一处视觉细节都为冠军定制。打开biubiu，这里就是你的主场。</div>
+              </div>
+              <div class="kol-card-benefits">
+                <div class="kol-mini-card">
+                  <div class="kol-mini-title">无声的身份宣言</div>
+                  <div class="kol-mini-desc">席位编号、专属铭牌，每一处都在替你表达</div>
+                </div>
+                <div class="kol-mini-card">
+                  <div class="kol-mini-title">每一帧动效都有讲究</div>
+                  <div class="kol-mini-desc">从启动到加速，每一步交互都成为冠军的独家体验</div>
+                </div>
+                <div class="kol-mini-card">
+                  <div class="kol-mini-title">置身你的专属主场</div>
+                  <div class="kol-mini-desc">整个客户端覆盖冠军主题，每一个界面都是主场氛围</div>
+                </div>
+              </div>
+              <div class="kol-card-visual">[ 冠军铭牌 & 游戏内标识 — 交付UI ]</div>
+            </div>
+            <!-- 卡3: 服务特权 -->
+            <div class="kol-benefit-card">
+              <div class="kol-card-top">
+                <div class="kol-card-title">1V1专属网络管家</div>
+                <div class="kol-card-sub">只为你一人服务的专属网络管家，问题出现即时响应。你的每一场比赛，都有专业后盾。</div>
+              </div>
+              <div class="kol-card-benefits">
+                <div class="kol-mini-card">
+                  <div class="kol-mini-title">网络问题，专家接手</div>
+                  <div class="kol-mini-desc">问题交给专家处理，你只需要专注比赛</div>
+                </div>
+                <div class="kol-mini-card">
+                  <div class="kol-mini-title">因为了解，所以精准</div>
+                  <div class="kol-mini-desc">熟悉你的网络环境，优化方案自然精准命中</div>
+                </div>
+                <div class="kol-mini-card">
+                  <div class="kol-mini-title">下一局，永远比这一局更好</div>
+                  <div class="kol-mini-desc">赛后自动分析网络表现，下一局的体验已经在优化的路上</div>
+                </div>
+              </div>
+              <div class="kol-card-visual">[ 专属服务通道示意 — 交付UI ]</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 底部战队背书条 -->
+        <div class="kol-trust-bar">
+          <span class="kol-trust-text">冠军专线已为 <strong>16+</strong> 职业战队提供赛训支持</span>
+          <div class="kol-trust-divider"></div>
+          <div class="kol-trust-teams">
+            <div class="kol-team-logo">T1</div>
+            <div class="kol-team-logo">EDG</div>
+            <div class="kol-team-logo">TS</div>
+            <div class="kol-team-logo">WBG</div>
+            <div class="kol-team-logo">JDG</div>
+            <div class="kol-team-logo">+11</div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- ===== 状态B：已开通（无邀请权限）===== -->
+      <div class="kol-page" id="memberPage">
+
+        <!-- 左侧：品牌+铭牌 -->
+        <div class="kol-left">
+          <div class="kol-brand-area">
+            <div class="kol-brand-tag">冠军专线</div>
+            <div class="kol-title">冠军之选<br>为赢而生</div>
+            <div class="kol-subtitle">认真对待每一局的人，值得冠军级的网络体验</div>
+          </div>
+
+          <!-- 铭牌主体 -->
+          <div class="kol-identity">
+            <div class="kol-identity-card">
+              <div class="kol-id-brand">CHAMPION LINE</div>
+              <div class="kol-id-row">
+                <div class="kol-id-name">Player_007</div>
+                <div class="kol-id-num">#007</div>
+              </div>
+              <div class="kol-id-meta">绝地求生 · PUBG</div>
+              <div class="kol-id-badge">受邀入席</div>
+              <div class="kol-id-service" onclick="openKolQrCode()">专属网络管家 ›</div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- 右侧：权益展示 -->
+        <div class="kol-right">
+          <div class="kol-carousel-nav">
+            <button class="kol-carousel-tab active" onclick="switchMemberCard(0, this)">畅享巅峰手感</button>
+            <button class="kol-carousel-tab" onclick="switchMemberCard(1, this)">彰显冠军身份</button>
+            <button class="kol-carousel-tab" onclick="switchMemberCard(2, this)">尊享专家护航</button>
+          </div>
+          <div class="kol-card-area">
+            <div class="kol-benefit-card active">
+              <div class="kol-card-top">
+                <div class="kol-card-title">冠军同款加速方案</div>
+                <div class="kol-card-sub">完全独享的加速节点资源，专门针对你的网络环境搭建。让每一次走位和出手，都如你所想。</div>
+              </div>
+              <div class="kol-card-benefits">
+                <div class="kol-mini-card">
+                  <div class="kol-mini-title">网络不再是变量</div>
+                  <div class="kol-mini-desc">当稳定成为常态，胜负只关乎操作本身</div>
+                </div>
+                <div class="kol-mini-card">
+                  <div class="kol-mini-title">操作反馈干脆利落</div>
+                  <div class="kol-mini-desc">当延迟低到无感，你和角色之间再无距离</div>
+                </div>
+                <div class="kol-mini-card">
+                  <div class="kol-mini-title">对你而言没有高峰期</div>
+                  <div class="kol-mini-desc">当独享成为前提，你的游戏时间不再需要挑选</div>
+                </div>
+              </div>
+              <div class="kol-card-visual">[ 冠军网络架构示意 — 交付UI ]</div>
+            </div>
+            <div class="kol-benefit-card">
+              <div class="kol-card-top">
+                <div class="kol-card-title">冠军专属视觉体验</div>
+                <div class="kol-card-sub">从客户端图标到加速动效，每一处视觉细节都为冠军定制。打开biubiu，这里就是你的主场。</div>
+              </div>
+              <div class="kol-card-benefits">
+                <div class="kol-mini-card">
+                  <div class="kol-mini-title">无声的身份宣言</div>
+                  <div class="kol-mini-desc">席位编号、专属铭牌，每一处都在替你表达</div>
+                </div>
+                <div class="kol-mini-card">
+                  <div class="kol-mini-title">每一帧动效都有讲究</div>
+                  <div class="kol-mini-desc">从启动到加速，每一步交互都成为冠军的独家体验</div>
+                </div>
+                <div class="kol-mini-card">
+                  <div class="kol-mini-title">置身你的专属主场</div>
+                  <div class="kol-mini-desc">整个客户端覆盖冠军主题，每一个界面都是主场氛围</div>
+                </div>
+              </div>
+              <div class="kol-card-visual">[ 冠军铭牌 & 游戏内标识 — 交付UI ]</div>
+            </div>
+            <div class="kol-benefit-card">
+              <div class="kol-card-top">
+                <div class="kol-card-title">1V1专属网络管家</div>
+                <div class="kol-card-sub">只为你一人服务的专属网络管家，问题出现即时响应。你的每一场比赛，都有专业后盾。</div>
+              </div>
+              <div class="kol-card-benefits">
+                <div class="kol-mini-card">
+                  <div class="kol-mini-title">网络问题，专家接手</div>
+                  <div class="kol-mini-desc">问题交给专家处理，你只需要专注比赛</div>
+                </div>
+                <div class="kol-mini-card">
+                  <div class="kol-mini-title">因为了解，所以精准</div>
+                  <div class="kol-mini-desc">熟悉你的网络环境，优化方案自然精准命中</div>
+                </div>
+                <div class="kol-mini-card">
+                  <div class="kol-mini-title">下一局，永远比这一局更好</div>
+                  <div class="kol-mini-desc">赛后自动分析网络表现，下一局的体验已经在优化的路上</div>
+                </div>
+              </div>
+              <div class="kol-card-visual">[ 专属服务通道示意 — 交付UI ]</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 底部战队背书条 -->
+        <div class="kol-trust-bar">
+          <span class="kol-trust-text">冠军专线已为 <strong>16+</strong> 职业战队提供赛训支持</span>
+          <div class="kol-trust-divider"></div>
+          <div class="kol-trust-teams">
+            <div class="kol-team-logo">T1</div>
+            <div class="kol-team-logo">EDG</div>
+            <div class="kol-team-logo">TS</div>
+            <div class="kol-team-logo">WBG</div>
+            <div class="kol-team-logo">JDG</div>
+            <div class="kol-team-logo">+11</div>
+          </div>
+        </div>
+
       </div>
 
       <div class="kol-page" id="kolPage">
@@ -2290,8 +3148,8 @@
               </div>
               <div class="kol-id-meta">绝地求生 · PUBG 职业选手</div>
               <div class="kol-id-badge">官方邀请</div>
-              <!-- 技术专家入口 -->
-              <div class="kol-id-service" onclick="openKolQrCode()">专属技术专家 ›</div>
+              <!-- 网络管家入口 -->
+              <div class="kol-id-service" onclick="openKolQrCode()">专属网络管家 ›</div>
             </div>
 
             <!-- 发出邀请 -->
@@ -2319,8 +3177,8 @@
               <!-- TO 收信人 -->
               <div class="kol-letter-to">
                 <span class="kol-letter-to-label">TO</span>
-                <button class="kol-letter-to-btn" id="kolToBtn" onclick="activateUidInput()">点击输入 BiuBiu UID</button>
-                <input class="kol-letter-to-input" id="kolToInput" type="text" placeholder="输入 BiuBiu UID" style="display:none">
+                <button class="kol-letter-to-btn" id="kolToBtn" onclick="activateUidInput()">点击输入 biubiu UID</button>
+                <input class="kol-letter-to-input" id="kolToInput" type="text" placeholder="输入 biubiu UID" style="display:none">
               </div>
 
               <!-- 请柬正文 -->
@@ -2383,29 +3241,29 @@
         <!-- 右侧：大卡轮播权益 -->
         <div class="kol-right">
           <div class="kol-carousel-nav">
-            <button class="kol-carousel-tab active" onclick="switchKolCard(0, this)">巅峰配置</button>
-            <button class="kol-carousel-tab" onclick="switchKolCard(1, this)">专属冠冕</button>
-            <button class="kol-carousel-tab" onclick="switchKolCard(2, this)">尊享护航</button>
+            <button class="kol-carousel-tab active" onclick="switchKolCard(0, this)">畅享巅峰手感</button>
+            <button class="kol-carousel-tab" onclick="switchKolCard(1, this)">彰显冠军身份</button>
+            <button class="kol-carousel-tab" onclick="switchKolCard(2, this)">尊享专家护航</button>
           </div>
           <div class="kol-card-area">
             <!-- 卡1: 技术特权 -->
             <div class="kol-benefit-card active">
               <div class="kol-card-top">
-                <div class="kol-card-title">冠军操作，不该受限</div>
-                <div class="kol-card-sub">决胜往往只在一瞬之间，我们要守住的，就是不让任何延迟与波动，碰到你那次足以改写比赛走向的关键出手。</div>
+                <div class="kol-card-title">冠军同款加速方案</div>
+                <div class="kol-card-sub">完全独享的加速节点资源，专门针对你的网络环境搭建。让每一次走位和出手，都如你所想。</div>
               </div>
               <div class="kol-card-benefits">
                 <div class="kol-mini-card">
-                  <div class="kol-mini-title">独享冠军加速节点</div>
-                  <div class="kol-mini-desc">关键时刻，快的不只是网络，更是你的出手。</div>
+                  <div class="kol-mini-title">网络不再是变量</div>
+                  <div class="kol-mini-desc">当稳定成为常态，胜负只关乎操作本身</div>
                 </div>
                 <div class="kol-mini-card">
-                  <div class="kol-mini-title">专属的带宽资源</div>
-                  <div class="kol-mini-desc">高峰时段依然从容，你的通道始终被优先保障。</div>
+                  <div class="kol-mini-title">操作反馈干脆利落</div>
+                  <div class="kol-mini-desc">当延迟低到无感，你和角色之间再无距离</div>
                 </div>
                 <div class="kol-mini-card">
-                  <div class="kol-mini-title">游戏场景智能适配</div>
-                  <div class="kol-mini-desc">比赛节奏会变，加速策略也该跟着变。</div>
+                  <div class="kol-mini-title">对你而言没有高峰期</div>
+                  <div class="kol-mini-desc">当独享成为前提，你的游戏时间不再需要挑选</div>
                 </div>
               </div>
               <div class="kol-card-visual">[ 冠军网络架构示意 — 交付UI ]</div>
@@ -2413,21 +3271,21 @@
             <!-- 卡2: 身份特权 -->
             <div class="kol-benefit-card">
               <div class="kol-card-top">
-                <div class="kol-card-title">冠军登场，不该普通</div>
-                <div class="kol-card-sub">从你出现的那一刻起，冠军该有的分量、排面与尊贵，就该先一步被看见。</div>
+                <div class="kol-card-title">冠军专属视觉体验</div>
+                <div class="kol-card-sub">从客户端图标到加速动效，每一处视觉细节都为冠军定制。打开biubiu，这里就是你的主场。</div>
               </div>
               <div class="kol-card-benefits">
                 <div class="kol-mini-card">
-                  <div class="kol-mini-title">冠军专属客户端主题</div>
-                  <div class="kol-mini-desc">打开客户端的那一刻，就知道这是你的主场。</div>
+                  <div class="kol-mini-title">无声的身份宣言</div>
+                  <div class="kol-mini-desc">席位编号、专属铭牌，每一处都在替你表达</div>
                 </div>
                 <div class="kol-mini-card">
-                  <div class="kol-mini-title">独一无二的席位编号</div>
-                  <div class="kol-mini-desc">专属编号在身，独特身份一眼可见。</div>
+                  <div class="kol-mini-title">每一帧动效都有讲究</div>
+                  <div class="kol-mini-desc">从启动到加速，每一步交互都成为冠军的独家体验</div>
                 </div>
                 <div class="kol-mini-card">
-                  <div class="kol-mini-title">游戏定制的冠军动效</div>
-                  <div class="kol-mini-desc">每一次亮相，都该配得上冠军应有的光芒。</div>
+                  <div class="kol-mini-title">置身你的专属主场</div>
+                  <div class="kol-mini-desc">整个客户端覆盖冠军主题，每一个界面都是主场氛围</div>
                 </div>
               </div>
               <div class="kol-card-visual">[ 冠军铭牌 & 游戏内标识 — 交付UI ]</div>
@@ -2435,21 +3293,21 @@
             <!-- 卡3: 服务特权 -->
             <div class="kol-benefit-card">
               <div class="kol-card-top">
-                <div class="kol-card-title">冠军待遇，不该缺席</div>
-                <div class="kol-card-sub">你不是一个人在战斗。从问题出现时的即时响应，到对局结束后的复盘分析，都有人在你身后。</div>
+                <div class="kol-card-title">1V1专属网络管家</div>
+                <div class="kol-card-sub">只为你一人服务的专属网络管家，问题出现即时响应。你的每一场比赛，都有专业后盾。</div>
               </div>
               <div class="kol-card-benefits">
                 <div class="kol-mini-card">
-                  <div class="kol-mini-title">专属1V1技术专家</div>
-                  <div class="kol-mini-desc">遇到问题，永远有人第一时间为你解决。</div>
+                  <div class="kol-mini-title">网络问题，专家接手</div>
+                  <div class="kol-mini-desc">问题交给专家处理，你只需要专注比赛</div>
                 </div>
                 <div class="kol-mini-card">
-                  <div class="kol-mini-title">冠军席位服务群</div>
-                  <div class="kol-mini-desc">专属群内即时响应，让重视感从不缺席。</div>
+                  <div class="kol-mini-title">因为了解，所以精准</div>
+                  <div class="kol-mini-desc">熟悉你的网络环境，优化方案自然精准命中</div>
                 </div>
                 <div class="kol-mini-card">
-                  <div class="kol-mini-title">专属赛后网络战报</div>
-                  <div class="kol-mini-desc">不放过每一次波动，只为每一局都精益求精。</div>
+                  <div class="kol-mini-title">下一局，永远比这一局更好</div>
+                  <div class="kol-mini-desc">赛后自动分析网络表现，下一局的体验已经在优化的路上</div>
                 </div>
               </div>
               <div class="kol-card-visual">[ 专属服务通道示意 — 交付UI ]</div>
@@ -2487,8 +3345,12 @@
     document.getElementById('activationPage').classList.remove('active');
     document.getElementById('kolPage').classList.remove('active');
     document.getElementById('uninvitedPage').classList.remove('active');
+    document.getElementById('invitedPage').classList.remove('active');
+    document.getElementById('memberPage').classList.remove('active');
     stopKolCarousel();
     stopUninvitedCarousel();
+    stopInvitedCarousel();
+    stopMemberCarousel();
     document.getElementById('kolInviteOverlay').classList.remove('active');
     document.getElementById('kolHistoryFloat').classList.remove('active');
     document.getElementById('moreDropdown').classList.remove('active');
@@ -2752,6 +3614,126 @@
     right.addEventListener('mouseleave', () => { uninvitedCarouselPaused = false; });
   })();
 
+  // 状态A弹窗
+  function openWhyLimited() {
+    document.getElementById('whyLimitedModal').classList.add('active');
+  }
+  function closeWhyLimited() {
+    document.getElementById('whyLimitedModal').classList.remove('active');
+  }
+  function openInviterList() {
+    document.getElementById('inviterListModal').classList.add('active');
+  }
+  function closeInviterList() {
+    document.getElementById('inviterListModal').classList.remove('active');
+  }
+  function switchInvitePlatform(tab) {
+    tab.parentElement.querySelectorAll('.invite-platform-tab').forEach(t => t.classList.remove('active'));
+    tab.classList.add('active');
+  }
+
+  // ===== 已被邀请页面 =====
+  function openInvitedPage() {
+    resetAll();
+    document.getElementById('invitedPage').classList.add('active');
+    updateBtns(7);
+    invitedCardIndex = 0;
+    switchInvitedCard(0, null);
+    startInvitedCarousel();
+  }
+
+  let invitedCardIndex = 0;
+  let invitedCarouselTimer = null;
+  let invitedCarouselPaused = false;
+
+  function switchInvitedCard(idx, tab) {
+    invitedCardIndex = idx;
+    const page = document.getElementById('invitedPage');
+    const tabs = page.querySelectorAll('.kol-carousel-tab');
+    tabs.forEach(t => t.classList.remove('active'));
+    if (tab) { tab.classList.add('active'); }
+    else { tabs[idx] && tabs[idx].classList.add('active'); }
+    page.querySelectorAll('.kol-benefit-card').forEach((card, i) => {
+      card.classList.toggle('active', i === idx);
+    });
+  }
+
+  function startInvitedCarousel() {
+    stopInvitedCarousel();
+    invitedCarouselTimer = setInterval(() => {
+      if (!invitedCarouselPaused) {
+        invitedCardIndex = (invitedCardIndex + 1) % 3;
+        switchInvitedCard(invitedCardIndex, null);
+      }
+    }, 2000);
+  }
+
+  function stopInvitedCarousel() {
+    if (invitedCarouselTimer) { clearInterval(invitedCarouselTimer); invitedCarouselTimer = null; }
+  }
+
+  // hover暂停轮播 - 已被邀请
+  (function() {
+    const right = document.querySelector('#invitedPage .kol-right');
+    if (!right) return;
+    right.addEventListener('mouseenter', () => { invitedCarouselPaused = true; });
+    right.addEventListener('mouseleave', () => { invitedCarouselPaused = false; });
+  })();
+
+  // 从已被邀请页面进入仪式
+  function openCeremonyFromInvited() {
+    stopInvitedCarousel();
+    document.getElementById('invitedPage').classList.remove('active');
+    openCeremony();
+  }
+
+  // ===== 状态B：已开通（无邀请权限）=====
+  function openMemberPage() {
+    resetAll();
+    document.getElementById('memberPage').classList.add('active');
+    updateBtns(8);
+    memberCardIndex = 0;
+    switchMemberCard(0, null);
+    startMemberCarousel();
+  }
+
+  let memberCardIndex = 0;
+  let memberCarouselTimer = null;
+  let memberCarouselPaused = false;
+
+  function switchMemberCard(idx, tab) {
+    memberCardIndex = idx;
+    const page = document.getElementById('memberPage');
+    const tabs = page.querySelectorAll('.kol-carousel-tab');
+    tabs.forEach(t => t.classList.remove('active'));
+    if (tab) { tab.classList.add('active'); }
+    else { tabs[idx] && tabs[idx].classList.add('active'); }
+    page.querySelectorAll('.kol-benefit-card').forEach((card, i) => {
+      card.classList.toggle('active', i === idx);
+    });
+  }
+
+  function startMemberCarousel() {
+    stopMemberCarousel();
+    memberCarouselTimer = setInterval(() => {
+      if (!memberCarouselPaused) {
+        memberCardIndex = (memberCardIndex + 1) % 3;
+        switchMemberCard(memberCardIndex, null);
+      }
+    }, 2000);
+  }
+
+  function stopMemberCarousel() {
+    if (memberCarouselTimer) { clearInterval(memberCarouselTimer); memberCarouselTimer = null; }
+  }
+
+  (function() {
+    const right = document.querySelector('#memberPage .kol-right');
+    if (!right) return;
+    right.addEventListener('mouseenter', () => { memberCarouselPaused = true; });
+    right.addEventListener('mouseleave', () => { memberCarouselPaused = false; });
+  })();
+
   // KOL邀请仪式
   function openKolInvite() {
     const overlay = document.getElementById('kolInviteOverlay');
@@ -2867,9 +3849,9 @@
     document.getElementById('kolHistoryFloat').classList.remove('active');
   }
 
-  // KOL联系技术专家（QR码入口）
+  // KOL联系网络管家（QR码入口）
   function openKolQrCode() {
-    alert('[ 弹出专属技术专家微信二维码 ]');
+    alert('[ 弹出专属网络管家微信二维码 ]');
   }
 
   // 点击其他区域关闭下拉菜单
