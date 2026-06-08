@@ -1050,9 +1050,12 @@
     -webkit-background-clip: text; -webkit-text-fill-color: transparent;
     line-height: 1;
   }
+  .kol-id-meta-row {
+    display: flex; align-items: center; gap: 10px;
+    margin-bottom: 14px;
+  }
   .kol-id-meta {
     font-size: 12px; color: rgba(255,255,255,0.25);
-    margin-bottom: 12px;
   }
   .kol-id-badge {
     display: inline-block;
@@ -1060,17 +1063,41 @@
     background: rgba(212,197,168,0.08);
     color: rgba(212,197,168,0.55);
     font-weight: 600; letter-spacing: 2px;
+    flex-shrink: 0;
   }
-  /* 网络管家入口 — 铭牌内极淡文字 */
-  .kol-id-service {
-    position: absolute; bottom: 14px; right: 18px;
-    font-size: 10px; color: rgba(187,168,138,0.2);
-    cursor: pointer;
-    transition: color 0.2s;
+  /* 使用专线加速 - 独立小按钮 */
+  .kol-id-accel {
+    display: inline-block;
+    font-size: 10px; color: rgba(187,168,138,0.4);
+    cursor: pointer; transition: all 0.2s;
     letter-spacing: 0.5px;
+    padding: 5px 14px; border-radius: 5px;
+    background: rgba(187,168,138,0.06);
+    border: 1px solid rgba(187,168,138,0.1);
   }
-  .kol-id-service:hover {
-    color: rgba(187,168,138,0.45);
+  .kol-id-accel:hover {
+    color: rgba(187,168,138,0.7);
+    background: rgba(187,168,138,0.1);
+    border-color: rgba(187,168,138,0.2);
+  }
+  /* 网络管家 - 右下角图标入口 */
+  .kol-id-butler {
+    position: absolute;
+    bottom: 12px; right: 14px;
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    background: rgba(187,168,138,0.06);
+    border: 1px solid rgba(187,168,138,0.08);
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer;
+    transition: all 0.25s;
+    font-size: 13px;
+    color: rgba(187,168,138,0.2);
+  }
+  .kol-id-butler:hover {
+    background: rgba(187,168,138,0.12);
+    border-color: rgba(187,168,138,0.2);
+    color: rgba(187,168,138,0.5);
   }
 
   /* 发出邀请按钮 */
@@ -3024,13 +3051,18 @@
             <div class="kol-identity-card">
               <div class="kol-id-brand">CHAMPION LINE</div>
               <div class="kol-id-row">
-                <div class="kol-id-name">Player_007</div>
-                <div class="kol-id-num">#007</div>
+                <div class="kol-id-num" style="font-size:16px;">#007</div>
               </div>
-              <div class="kol-id-meta">绝地求生 · PUBG</div>
-              <div class="kol-id-badge">受邀入席</div>
-              <div class="kol-id-service" onclick="openKolQrCode()">专属网络管家 ›</div>
+              <div class="kol-id-meta-row">
+                <div class="kol-id-meta">绝地求生 · PUBG</div>
+                <div class="kol-id-badge">受邀入席</div>
+              </div>
+              <!-- 网络管家：右下角图标 -->
+              <div class="kol-id-butler" title="专属网络管家" onclick="openKolQrCode()">🎧</div>
             </div>
+
+            <!-- 主操作：使用专线加速 -->
+            <button class="kol-invite-main" onclick="alert('[ 跳转至绝地求生冠军专线加速页 ]')">使用专线加速</button>
 
           </div>
         </div>
@@ -3144,10 +3176,13 @@
                 <div class="kol-id-name">XDD</div>
                 <div class="kol-id-num">#001</div>
               </div>
-              <div class="kol-id-meta">绝地求生 · PUBG 职业选手</div>
-              <div class="kol-id-badge">官方邀请</div>
-              <!-- 网络管家入口 -->
-              <div class="kol-id-service" onclick="openKolQrCode()">专属网络管家 ›</div>
+              <div class="kol-id-meta-row">
+                <div class="kol-id-meta">绝地求生 · PUBG</div>
+                <div class="kol-id-badge">官方邀请</div>
+              </div>
+              <div class="kol-id-accel" onclick="alert('[ 跳转至绝地求生冠军专线加速页 ]')">使用专线加速 ›</div>
+              <!-- 网络管家：右下角图标 -->
+              <div class="kol-id-butler" title="专属网络管家" onclick="openKolQrCode()">🎧</div>
             </div>
 
             <!-- 发出邀请 -->
