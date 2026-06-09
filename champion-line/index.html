@@ -1065,6 +1065,42 @@
     font-weight: 600; letter-spacing: 2px;
     flex-shrink: 0;
   }
+  /* 席位有效期说明 */
+  .seat-validity {
+    display: flex; align-items: center; gap: 5px;
+    position: absolute;
+    bottom: 56px; left: 50%; transform: translateX(-50%);
+    font-size: 10px; color: rgba(255,255,255,0.35);
+    letter-spacing: 0.3px;
+    z-index: 10;
+  }
+  .seat-validity-icon {
+    position: relative;
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 14px; height: 14px; border-radius: 50%;
+    border: 1px solid rgba(255,255,255,0.25);
+    font-size: 9px; color: rgba(255,255,255,0.35);
+    cursor: help;
+  }
+  .seat-validity-tooltip {
+    position: fixed;
+    width: 220px;
+    padding: 10px 12px;
+    background: rgba(30,27,24,0.96);
+    border: 1px solid rgba(187,168,138,0.15);
+    border-radius: 6px;
+    font-size: 11px; line-height: 1.5;
+    color: rgba(255,255,255,0.6);
+    white-space: normal;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.2s;
+    z-index: 99999;
+  }
+  .seat-validity-tooltip.visible {
+    opacity: 1;
+  }
+
   /* 使用专线加速 - 独立小按钮 */
   .kol-id-accel {
     display: inline-block;
@@ -1134,6 +1170,30 @@
   }
   .kol-quota-link em {
     font-style: normal; color: rgba(212,197,168,0.4); font-weight: 600;
+  }
+  /* 名额用完状态 */
+  .kol-invite-main.disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+    pointer-events: none;
+  }
+  .kol-quota-done {
+    margin-top: 12px;
+    text-align: center;
+    font-size: 11px; color: rgba(212,197,168,0.3);
+    cursor: pointer;
+    transition: color 0.2s;
+  }
+  .kol-quota-done:hover {
+    color: rgba(212,197,168,0.45);
+  }
+  /* 已受邀入席纪念按钮 */
+  .join-btn.commemorative {
+    background: transparent;
+    border: 1px solid rgba(187,168,138,0.25);
+    color: rgba(212,197,168,0.5);
+    cursor: default;
+    pointer-events: none;
   }
 
   /* ===== KOL邀请仪式浮层 ===== */
@@ -2344,6 +2404,8 @@
     <button class="state-btn" onclick="openUninvitedPage()" style="background:rgba(212,197,168,0.08);border-color:rgba(212,197,168,0.2)">未被邀请</button>
     <button class="state-btn" onclick="openInvitedPage()" style="background:rgba(212,197,168,0.08);border-color:rgba(212,197,168,0.2)">已被邀请</button>
     <button class="state-btn" onclick="openMemberPage()" style="background:rgba(212,197,168,0.08);border-color:rgba(212,197,168,0.2)">已开通(无邀请)</button>
+    <button class="state-btn" onclick="openKolPageExhausted()" style="background:rgba(140,80,80,0.12);border-color:rgba(200,120,120,0.25)">KOL(名额用完)</button>
+    <button class="state-btn" onclick="openCeremonyCommemorative()" style="background:rgba(140,80,80,0.12);border-color:rgba(200,120,120,0.25)">邀请函(纪念)</button>
   </div>
 
   <!-- 客户端窗口 -->
@@ -2514,8 +2576,8 @@
         </div>
         <!-- 消息列表 -->
         <div class="mc-list">
-          <!-- 冠军专线邀请函 - 特殊卡片 -->
-          <div class="mc-item mc-invitation" onclick="openCeremony()">
+          <!-- 冠军专线邀请函 - 未接受状态 -->
+          <div class="mc-item mc-invitation" id="mcInviteNew" onclick="openCeremony()">
             <div class="mc-item-header">
               <div class="mc-item-title">🏆 加入冠军行列 <span class="mc-invitation-badge">邀请函</span></div>
               <div class="mc-item-meta">
@@ -2524,6 +2586,17 @@
               </div>
             </div>
             <div class="mc-item-desc">认真对待每一局的人，值得冠军级的网络体验</div>
+          </div>
+          <!-- 冠军专线邀请函 - 已接受纪念状态（演示，默认隐藏） -->
+          <div class="mc-item mc-invitation" id="mcInviteAccepted" style="display:none;" onclick="openCeremonyCommemorative()">
+            <div class="mc-item-header">
+              <div class="mc-item-title">🏆 加入冠军行列 <span class="mc-invitation-badge" style="opacity:0.5;">邀请函</span></div>
+              <div class="mc-item-meta">
+                <span class="mc-item-source mc-source-champion">XDD 左梓轩</span>
+                <span class="mc-item-time">2026-06-03 14:22</span>
+              </div>
+            </div>
+            <div class="mc-item-desc">已受邀入席 · 席位 #007</div>
           </div>
           <!-- 普通消息 -->
           <div class="mc-item">
@@ -3065,6 +3138,12 @@
             <button class="kol-invite-main" onclick="alert('[ 跳转至绝地求生冠军专线加速页 ]')">使用专线加速</button>
 
           </div>
+
+          <!-- 席位有效期说明 -->
+          <div class="seat-validity">
+            席位长期有效
+            <span class="seat-validity-icon" data-tip="你的冠军专线席位开通后长期有效，持续享有全部权益。冠军专线的席位规则、权益内容可能随产品发展进行调整，届时将提前通知。">?</span>
+          </div>
         </div>
 
         <!-- 右侧：权益展示 -->
@@ -3185,11 +3264,19 @@
               <div class="kol-id-butler" title="专属网络管家" onclick="openKolQrCode()">🎧</div>
             </div>
 
-            <!-- 发出邀请 -->
-            <button class="kol-invite-main" onclick="openKolInvite()">邀请入席</button>
+            <!-- 发出邀请（有名额时） -->
+            <button class="kol-invite-main" id="kolInviteBtn" onclick="openKolInvite()">邀请入席</button>
 
-            <!-- 名额（点击查看记录） -->
-            <div class="kol-quota-link" onclick="openKolHistory()">剩余邀请名额 <em>3</em> / 5</div>
+            <!-- 名额状态：有剩余 -->
+            <div class="kol-quota-link" id="kolQuotaRemain" onclick="openKolHistory()">剩余邀请名额 <em>3</em> / 5</div>
+            <!-- 名额状态：已用完（切换演示用，默认隐藏） -->
+            <div class="kol-quota-done" id="kolQuotaDone" style="display:none;" onclick="openKolHistory()">你已帮助 5 位玩家加入冠军行列</div>
+          </div>
+
+          <!-- 席位有效期说明 -->
+          <div class="seat-validity">
+            席位长期有效
+            <span class="seat-validity-icon" data-tip="你的冠军专线席位开通后长期有效，持续享有全部权益。冠军专线的席位规则、权益内容可能随产品发展进行调整，届时将提前通知。">?</span>
           </div>
         </div>
 
@@ -3256,17 +3343,15 @@
           <div class="kol-history-list">
             <div class="kol-history-item">
               <div class="kol-history-user">
-                <div class="kol-history-name">Player_007</div>
+                <div class="kol-history-name">138****7621</div>
                 <div class="kol-history-time">2026-06-03 14:22</div>
               </div>
-              <div class="kol-history-status">已激活</div>
             </div>
             <div class="kol-history-item">
               <div class="kol-history-user">
-                <div class="kol-history-name">夜行星辰</div>
+                <div class="kol-history-name">152****3309</div>
                 <div class="kol-history-time">2026-06-01 09:15</div>
               </div>
-              <div class="kol-history-status pending">待接受</div>
             </div>
           </div>
         </div>
@@ -3411,6 +3496,12 @@
     resetAll();
     const el = document.getElementById('inviteCeremony');
     el.className = 'invite-ceremony active';
+    // 确保按钮是正常状态
+    const btn = document.querySelector('.join-btn');
+    btn.textContent = '加入冠军行列';
+    btn.className = 'join-btn';
+    btn.onclick = transitionToGameSelect;
+    document.querySelector('.ceremony-hint').style.display = '';
     updateBtns(2);
 
     // 阶段1: 暗场
@@ -3423,6 +3514,25 @@
     setTimeout(() => el.classList.add('phase-flood'), 1000);
 
     // 阶段4: 内容显现
+    setTimeout(() => el.classList.add('phase-reveal'), 1800);
+  }
+
+  // 纪念模式：已接受邀请后再次打开
+  function openCeremonyCommemorative() {
+    resetAll();
+    const el = document.getElementById('inviteCeremony');
+    el.className = 'invite-ceremony active';
+    // 按钮改为纪念状态
+    const btn = document.querySelector('.join-btn');
+    btn.textContent = '已受邀入席';
+    btn.className = 'join-btn commemorative';
+    btn.onclick = null;
+    document.querySelector('.ceremony-hint').style.display = 'none';
+    updateBtns(2);
+
+    requestAnimationFrame(() => el.classList.add('phase-dim'));
+    setTimeout(() => el.classList.add('phase-seam'), 500);
+    setTimeout(() => el.classList.add('phase-flood'), 1000);
     setTimeout(() => el.classList.add('phase-reveal'), 1800);
   }
 
@@ -3554,7 +3664,25 @@
   function openKolPage() {
     resetAll();
     document.getElementById('kolPage').classList.add('active');
+    // 恢复正常名额状态
+    document.getElementById('kolInviteBtn').classList.remove('disabled');
+    document.getElementById('kolQuotaRemain').style.display = '';
+    document.getElementById('kolQuotaDone').style.display = 'none';
     updateBtns(5);
+    kolCardIndex = 0;
+    switchKolCard(0, null);
+    startKolCarousel();
+  }
+
+  // KOL名额用完状态
+  function openKolPageExhausted() {
+    resetAll();
+    document.getElementById('kolPage').classList.add('active');
+    // 按钮置灰 + 切换文案
+    document.getElementById('kolInviteBtn').classList.add('disabled');
+    document.getElementById('kolQuotaRemain').style.display = 'none';
+    document.getElementById('kolQuotaDone').style.display = '';
+    updateBtns(9);
     kolCardIndex = 0;
     switchKolCard(0, null);
     startKolCarousel();
@@ -3893,6 +4021,26 @@
       document.getElementById('moreDropdown').classList.remove('active');
     }
   });
+
+  // 席位有效期 tooltip
+  (function(){
+    const tip = document.createElement('div');
+    tip.className = 'seat-validity-tooltip';
+    document.body.appendChild(tip);
+
+    document.querySelectorAll('.seat-validity-icon').forEach(icon => {
+      icon.addEventListener('mouseenter', () => {
+        const rect = icon.getBoundingClientRect();
+        tip.textContent = icon.getAttribute('data-tip');
+        tip.style.left = (rect.right + 8) + 'px';
+        tip.style.top = (rect.top - 60) + 'px';
+        tip.classList.add('visible');
+      });
+      icon.addEventListener('mouseleave', () => {
+        tip.classList.remove('visible');
+      });
+    });
+  })();
 </script>
 </body>
 </html>
