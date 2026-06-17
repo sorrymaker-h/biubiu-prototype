@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>路由器插件主路径业务分析框架</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", Arial, sans-serif;
+      background: #f5f7fb;
+      color: #1f2937;
+    }
+    .wrap {
+      width: 1400px;
+      margin: 0 auto;
+      padding: 28px;
+      background: linear-gradient(180deg, #f8fbff 0%, #f5f7fb 100%);
+    }
+    .hero {
+      background: linear-gradient(135deg, #2b50ff 0%, #4f7cff 100%);
+      color: #fff;
+      border-radius: 20px;
+      padding: 28px 32px;
+      margin-bottom: 20px;
+    }
+    .hero h1 {
+      margin: 0 0 10px;
+      font-size: 34px;
+    }
+    .hero p {
+      margin: 6px 0;
+      font-size: 15px;
+      line-height: 1.8;
+      opacity: 0.96;
+    }
+    .section {
+      background: #fff;
+      border: 1px solid #e6ebf3;
+      border-radius: 18px;
+      padding: 20px;
+      margin-bottom: 18px;
+      box-shadow: 0 10px 24px rgba(17, 24, 39, 0.05);
+    }
+    .section h2 {
+      margin: 0 0 14px;
+      font-size: 24px;
+      color: #111827;
+    }
+    .desc {
+      margin: -4px 0 14px;
+      color: #6b7280;
+      font-size: 14px;
+      line-height: 1.7;
+    }
+    .flow {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 10px;
+    }
+    .step {
+      background: #f7faff;
+      border: 1px solid #dfe8ff;
+      border-radius: 14px;
+      padding: 12px;
+      min-height: 96px;
+    }
+    .step .num {
+      display: inline-flex;
+      width: 24px;
+      height: 24px;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+      background: #2b50ff;
+      color: #fff;
+      font-size: 12px;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+    .step h3 {
+      margin: 0 0 6px;
+      font-size: 15px;
+    }
+    .step p {
+      margin: 0;
+      font-size: 12px;
+      line-height: 1.6;
+      color: #667085;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      overflow: hidden;
+      border-radius: 14px;
+      border: 1px solid #e8edf5;
+    }
+    th, td {
+      border-bottom: 1px solid #edf2f7;
+      padding: 12px 14px;
+      text-align: left;
+      vertical-align: top;
+      font-size: 14px;
+      line-height: 1.7;
+    }
+    th {
+      background: #f6f9ff;
+      color: #2b50ff;
+      font-weight: 700;
+    }
+    tr:last-child td {
+      border-bottom: none;
+    }
+    .grid2 {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 16px;
+    }
+    .card {
+      background: #fbfcff;
+      border: 1px solid #e6ebf3;
+      border-radius: 16px;
+      padding: 16px;
+    }
+    .card h3 {
+      margin: 0 0 10px;
+      font-size: 18px;
+    }
+    .card p, .card li {
+      font-size: 14px;
+      line-height: 1.75;
+      color: #4b5563;
+    }
+    ul {
+      margin: 8px 0 0;
+      padding-left: 20px;
+    }
+    .footer {
+      background: #111827;
+      color: #fff;
+      border-radius: 16px;
+      padding: 18px 20px;
+      margin-top: 20px;
+    }
+    .footer h3 {
+      margin: 0 0 10px;
+      font-size: 20px;
+    }
+    .footer li {
+      font-size: 14px;
+      line-height: 1.8;
+      color: rgba(255,255,255,0.92);
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+
+    <div class="hero">
+      <h1>路由器插件主路径业务分析框架</h1>
+      <p><strong>目标：</strong>围绕主路径漏斗，验证服务是否可用、是否稳定，以及用户是否愿意继续使用。</p>
+      <p><strong>分析原则：</strong>先明确指标的分子分母；结论既要能支持研发适配优先级，也要能指导产品做链路引导、反馈和体验优化。</p>
+    </div>
+
+    <div class="section">
+      <h2>一、主路径漏斗</h2>
+      <div class="flow">
+        <div class="step">
+          <div class="num">1</div>
+          <h3>点击绑定</h3>
+          <p>进入主流程</p>
+        </div>
+        <div class="step">
+          <div class="num">2</div>
+          <h3>检测路由器</h3>
+          <p>识别并校验是否支持</p>
+        </div>
+        <div class="step">
+          <div class="num">3</div>
+          <h3>登录管理员</h3>
+          <p>完成路由器后台登录</p>
+        </div>
+        <div class="step">
+          <div class="num">4</div>
+          <h3>安装插件</h3>
+          <p>完成能力部署</p>
+        </div>
+        <div class="step">
+          <div class="num">5</div>
+          <h3>进入设备列表</h3>
+          <p>识别可加速设备</p>
+        </div>
+        <div class="step">
+          <div class="num">6</div>
+          <h3>发起加速</h3>
+          <p>选择游戏/区服并启动</p>
+        </div>
+        <div class="step">
+          <div class="num">7</div>
+          <h3>完成会话</h3>
+          <p>稳定加速并手动停止</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <h2>二、核心指标定义（分子 / 分母）</h2>
+      <div class="desc">口径先对齐，避免后续讨论时对同一个指标理解不同。</div>
+      <table>
+        <thead>
+          <tr>
+            <th style="width:18%">指标</th>
+            <th style="width:28%">分子</th>
+            <th style="width:28%">分母</th>
+            <th style="width:26%">业务意义</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>检测支持成功率</strong></td>
+            <td>完成检测且识别为支持插件的用户数</td>
+            <td>点击绑定的用户数</td>
+            <td>判断入口进来的用户中，有多少能进入正式绑定流程；也可用于评估适配覆盖度</td>
+          </tr>
+          <tr>
+            <td><strong>登录成功率</strong></td>
+            <td>管理员登录成功的用户数</td>
+            <td>进入登录页的用户数</td>
+            <td>判断登录是否是主路径核心卡点</td>
+          </tr>
+          <tr>
+            <td><strong>插件安装成功率</strong></td>
+            <td>插件安装成功的用户数</td>
+            <td>登录成功的用户数</td>
+            <td>判断登录后能否顺利完成能力部署</td>
+          </tr>
+          <tr>
+            <td><strong>设备发现成功率</strong></td>
+            <td>进入设备列表且识别到至少1个设备的用户数</td>
+            <td>插件安装成功的用户数</td>
+            <td>判断安装后是否真正进入可用状态</td>
+          </tr>
+          <tr>
+            <td><strong>发起加速成功率</strong></td>
+            <td>成功启动一次加速的用户数</td>
+            <td>进入设备列表的用户数</td>
+            <td>判断用户是否真正用到核心能力</td>
+          </tr>
+          <tr>
+            <td><strong>5分钟稳定率</strong></td>
+            <td>发起加速后持续5分钟无异常的会话数</td>
+            <td>成功发起加速的会话数</td>
+            <td>判断短时稳定性，识别“刚启动就异常”的问题</td>
+          </tr>
+          <tr>
+            <td><strong>加速会话完成率</strong></td>
+            <td>无异常并最终手动停止的会话数</td>
+            <td>成功发起加速的会话数</td>
+            <td>判断是否能完成一次完整可用会话</td>
+          </tr>
+          <tr>
+            <td><strong>异常中断率</strong></td>
+            <td>加速过程中出现异常中断的会话数</td>
+            <td>成功发起加速的会话数</td>
+            <td>判断稳定性问题对真实使用的损害程度</td>
+          </tr>
+          <tr>
+            <td><strong>次日留存率</strong></td>
+            <td>D日首次进入该功能后，D+1日再次进入该功能的用户数</td>
+            <td>D日首次进入该功能的用户数</td>
+            <td>判断用户是否愿意第二天回来继续使用</td>
+          </tr>
+          <tr>
+            <td><strong>再次加速率</strong></td>
+            <td>首次成功发起加速后，后续再次成功发起加速的用户数</td>
+            <td>首次成功发起加速的用户数</td>
+            <td>判断真实复用意愿，比单纯留存更贴近业务价值</td>
+          </tr>
+          <tr>
+            <td><strong>解绑并卸载率</strong></td>
+            <td>成功完成绑定后，主动执行“解绑并卸载”的用户数</td>
+            <td>成功完成绑定的用户数</td>
+            <td>判断用户是否彻底放弃该能力，也是最终负向结果指标</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="section">
+      <h2>三、业务需要回答的核心问题</h2>
+      <table>
+        <thead>
+          <tr>
+            <th style="width:18%">分析方向</th>
+            <th style="width:30%">业务问题</th>
+            <th style="width:24%">重点指标</th>
+            <th style="width:28%">结论用途</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>可用性</strong></td>
+            <td>用户能不能顺利从绑定走到成功发起加速</td>
+            <td>检测支持成功率、登录成功率、安装成功率、设备发现成功率、发起加速成功率</td>
+            <td>找到主路径最大的断点，判断是适配问题还是链路体验问题</td>
+          </tr>
+          <tr>
+            <td><strong>稳定性</strong></td>
+            <td>发起加速后能不能稳定使用，而不是刚启动就掉或中途断开</td>
+            <td>5分钟稳定率、异常中断率、加速会话完成率</td>
+            <td>判断服务是不是“能起不能用”</td>
+          </tr>
+          <tr>
+            <td><strong>持续使用意愿</strong></td>
+            <td>用户在完成首次体验后，是否愿意继续回来用，还是直接放弃</td>
+            <td>次日留存率、再次加速率、解绑并卸载率</td>
+            <td>判断服务是否建立长期价值，以及流失是否需要回溯具体原因</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="section">
+      <h2>四、卡点分析后，产品层面可以做什么</h2>
+      <div class="desc">这里聚焦产品可做的链路引导、指引、反馈、体验优化；适配问题则需要明确 push 研发。</div>
+      <table>
+        <thead>
+          <tr>
+            <th style="width:18%">卡点环节</th>
+            <th style="width:28%">更可能的问题类型</th>
+            <th style="width:24%">产品层面可做的事</th>
+            <th style="width:30%">研发/策略层面的动作</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>检测路由器</strong></td>
+            <td>更可能是品牌/型号/固件未适配，导致检测失败或不支持</td>
+            <td>明确反馈失败原因，不要只给模糊失败提示；在结果页展示“当前型号暂不支持/适配中”等清晰说明，减少用户困惑</td>
+            <td>按失败机型和覆盖人群排优先级，推动研发补适配；建立机型支持清单和适配节奏</td>
+          </tr>
+          <tr>
+            <td><strong>登录管理员</strong></td>
+            <td>用户不知道管理员账号密码，或者不知道去哪里找</td>
+            <td>优化管理员账密引导；补充“什么是路由器管理员账号密码”“如何查看/修改”的说明；失败提示更具体，不要笼统提示登录失败</td>
+            <td>研发侧配合细化错误类型，区分账号错、密码错、接口异常等，便于产品给出更准的反馈</td>
+          </tr>
+          <tr>
+            <td><strong>安装插件</strong></td>
+            <td>安装耗时长、过程状态不透明，用户误以为卡死</td>
+            <td>增加安装进度、状态反馈、预计等待说明；避免用户在等待中退出</td>
+            <td>研发优化安装耗时、超时机制和失败原因回传</td>
+          </tr>
+          <tr>
+            <td><strong>设备列表</strong></td>
+            <td>设备没识别出来，用户不知道是没设备、没联网还是识别失败</td>
+            <td>优化空状态页，明确告诉用户该检查什么；支持刷新；让用户知道下一步怎么做</td>
+            <td>研发侧优化设备发现和识别逻辑，补充识别失败原因</td>
+          </tr>
+          <tr>
+            <td><strong>发起加速</strong></td>
+            <td>问题不能先假设为“选择成本高”，要先拆是找不到游戏、找不到区服、不会选，还是发起后效果不好</td>
+            <td>如果数据证明用户在选择页流失，再考虑搜索、推荐、最近玩过、热门游戏等体验优化；如果是失败后无反馈，则补明确提示和下一步动作</td>
+            <td>按游戏、区服、节点维度分析成功率和效果表现；若效果差或覆盖不足，推动研发和资源侧补游戏/线路适配</td>
+          </tr>
+          <tr>
+            <td><strong>加速过程中断</strong></td>
+            <td>服务稳定性不足，用户被异常打断</td>
+            <td>异常提示不要只告知失败，要告诉用户原因和下一步；必要时提供重试、恢复、切换方案</td>
+            <td>研发优先排查高频中断原因，按异常类型做专项治理</td>
+          </tr>
+          <tr>
+            <td><strong>后续流失</strong></td>
+            <td>不能先假设是“没形成习惯”，应先回溯流失用户到底在用什么游戏、效果如何、是否低于预期</td>
+            <td>产品侧补充效果反馈、结果说明和关键场景提示，但前提是先知道用户为何流失</td>
+            <td>重点分析流失用户的游戏分布、区服、平均延迟、波动表现，并结合竞品表现做对比，推动研发和线路资源优化</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="section">
+      <h2>五、业务判断顺序</h2>
+      <div class="grid2">
+        <div class="card">
+          <h3>1. 先判断主路径是否跑通</h3>
+          <ul>
+            <li>重点看检测支持成功率、登录成功率、安装成功率、设备发现成功率、发起加速成功率。</li>
+            <li>如果卡在检测，优先判断适配覆盖问题，而不是先做用户教育。</li>
+            <li>如果卡在登录，产品要重点补管理员账密引导和失败反馈。</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h3>2. 再判断服务是否稳定</h3>
+          <ul>
+            <li>重点看5分钟稳定率、异常中断率、加速会话完成率。</li>
+            <li>如果成功启动但很快异常，说明这项服务还不具备真实可用性。</li>
+            <li>这类问题优先 push 研发做专项治理，同时优化异常反馈和恢复路径。</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h3>3. 最后判断用户为什么不继续用</h3>
+          <ul>
+            <li>重点看次日留存率、再次加速率、解绑并卸载率。</li>
+            <li>如果这些指标差，先回溯用户加速的具体游戏、区服、效果表现，不要直接假设是体验问题。</li>
+            <li>必要时要和竞品做效果对比，明确是线路/适配/效果问题，还是产品表达问题。</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h3>4. 产品动作和研发动作要分开看</h3>
+          <ul>
+            <li>适配覆盖、稳定性、游戏线路效果问题，核心是 push 研发和资源侧。</li>
+            <li>链路引导、失败反馈、空状态说明、恢复路径，是产品应该同步优化的部分。</li>
+            <li>不要用产品引导去掩盖本质上的适配和效果问题。</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="footer">
+      <h3>结论</h3>
+      <ul>
+        <li>“解绑”和“卸载”在当前产品里是同一个动作，因此应统一为<strong>解绑并卸载率</strong>。</li>
+        <li>检测路由器失败，主判断方向应优先放在<strong>适配覆盖</strong>，而不是先归因为用户没连对 Wi-Fi。</li>
+        <li>发起加速和后续流失不能直接拍脑袋归因为“选择复杂”或“没形成习惯”，要先拆出具体原因：<strong>找不到游戏、效果不好、延迟不达预期、竞品更优</strong>等。</li>
+        <li>这套分析框架的核心，是让业务能同时得到两类结论：<strong>哪里需要 push 研发做适配和效果优化，哪里需要产品优化链路引导、反馈和体验</strong>。</li>
+      </ul>
+    </div>
+
+  </div>
+</body>
+</html>
